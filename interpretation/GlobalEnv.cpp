@@ -306,6 +306,7 @@ Environment* makeGlobalEnv() {
   
   env->declareVar("empty", new EmptyVal(), true);
   env->declareVar("break", new BreakVal(), true);
+  env->declareVar("continue", new ContinueVal(), true);
   
   env->declareVar("pi", MK_NUM(M_PI), true);
   env->declareVar("e", MK_NUM(M_E), true);

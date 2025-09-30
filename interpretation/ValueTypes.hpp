@@ -8,6 +8,7 @@ class Environment;
 enum class ValueType {
   Empty,
   Break, // for breaking out of the loops
+  Continue, // continue out of the loops
   Number,
   String,
   Boolean,
@@ -35,6 +36,12 @@ class EmptyVal: public RuntimeVal{
 class BreakVal: public RuntimeVal{
   public:
     BreakVal(): RuntimeVal(ValueType::Break) {
+    }
+};
+
+class ContinueVal: public RuntimeVal{
+  public:
+    ContinueVal(): RuntimeVal(ValueType::Continue) {
     }
 };
 

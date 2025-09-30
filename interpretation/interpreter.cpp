@@ -117,6 +117,7 @@ RuntimeVal* eval_while_expr(WhileStatement* whileExpr, Environment* env) {
     for (auto stmt : whileExpr->body) {
       auto returned = evaluate(stmt, scope);
       if (returned->type == ValueType::Break) { break_flag = true; break; }
+      if (returned->type == ValueType::Continue) { break; }
       last_returned = returned;
     }
     if (break_flag) {break;}
