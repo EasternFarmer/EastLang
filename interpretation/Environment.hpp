@@ -10,8 +10,8 @@ class Environment {
     std::set<std::string> constants;
     std::unordered_map<std::string, RuntimeVal*> values;
   public:
-    Environment(Environment* pe);
-    RuntimeVal* declareVar(std::string varname, RuntimeVal* value, bool constant);
+    Environment(Environment* pe = nullptr);
+    RuntimeVal* declareVar(std::string varname, RuntimeVal* value, bool constant = false);
     RuntimeVal* assignVar(std::string varname, RuntimeVal* value);
     RuntimeVal* lookupVar(std::string varname);
     Environment* resolve(std::string varname);

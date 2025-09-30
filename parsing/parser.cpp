@@ -72,6 +72,12 @@ void print_node_type(NodeType node) {
     case NodeType::VariableDeclaration:
       std::cout << "varDec node\n";
       break;
+    case NodeType::IfStatement:
+      std::cout << "IfStmt node\n";
+      break;
+    case NodeType::WhileStatement:
+      std::cout << "WhileStmt node\n";
+      break;
     }
 }
 
@@ -124,6 +130,15 @@ void print_token_type(TokenType tk) {
       break;
     case TokenType::EndOfFile:
       std::cout << "EOF Token\n";
+      break;
+    case TokenType::If:
+      std::cout << "IF Token\n";
+      break;
+    case TokenType::Else:
+      std::cout << "Else Token\n";
+      break;
+    case TokenType::While:
+      std::cout << "While Token\n";
       break;
   }
 }

@@ -6,11 +6,11 @@
 #include "../Errors.hpp"
 #include "GlobalEnv.hpp"
 
-Environment::Environment(Environment* pe = nullptr) {
+Environment::Environment(Environment* pe) {
   parentEnv = pe;
 }
 
-RuntimeVal* Environment::declareVar(std::string varname, RuntimeVal* value, bool constant = false) {
+RuntimeVal* Environment::declareVar(std::string varname, RuntimeVal* value, bool constant) {
   if (values.find(varname) != values.end()) { // value exists
     raise_error("Can't declare a value that already exists");
   }
