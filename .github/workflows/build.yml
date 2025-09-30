@@ -1,15 +1,12 @@
-name: Build and Release
+name: Build
 
 on:
   push:
     branches: ["main"]
 
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+  build-windows:
+    runs-on: windows-latest
 
     steps:
       - name: Checkout repository
@@ -24,6 +21,35 @@ jobs:
             mingw-w64-x86_64-cmake
             make
             mingw-w64-x86_64-ninja
+
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --config Release --parallel
+
+      - name: Package
+        run: cmake --build build --target package
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-latest-binaries
+          path: build/*.zip
+  build-unix:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up CMake
+        uses: jwlawson/actions-setup-cmake@v1
+        with:
+          cmake-version: '4.1.x'
 
       - name: Configure
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
