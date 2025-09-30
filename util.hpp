@@ -1,5 +1,7 @@
 #pragma once
 #include <string>
+#include "parsing/lexer.hpp"
+#include "parsing/ast.hpp"
 
 std::string pwd();
 

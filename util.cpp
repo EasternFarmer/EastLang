@@ -4,8 +4,6 @@
 #include <fstream>
 #include <iostream>
 #include <filesystem>
-#include "parsing/lexer.hpp"
-#include "parsing/ast.hpp"
 
 std::string pwd() {
   std::filesystem::path cwd = std::filesystem::current_path();
