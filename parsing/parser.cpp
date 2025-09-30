@@ -44,43 +44,6 @@ OperatorType Parser::get_operator(std::string operatorLiteral) {
   }
 }
 
-void print_node_type(NodeType node) {
-  switch (node) {
-    case NodeType::AssignmentExpr:
-      std::cout << "assing node\n";
-      break;
-    case NodeType::BinaryExpr:
-      std::cout << "binary node\n";
-      break;
-    case NodeType::CallExpr:
-      std::cout << "callexpr node\n";
-      break;
-    case NodeType::NumberLiteral:
-      std::cout << "Number node\n";
-      break;
-    case NodeType::FunctionDeclaration:
-      std::cout << "func node\n";
-      break;
-    case NodeType::Identifier:
-      std::cout << "iden node\n";
-      break;
-    case NodeType::Program:
-      std::cout << "program node\n";
-      break;
-    case NodeType::StringLiteral:
-      std::cout << "str node\n";
-    case NodeType::VariableDeclaration:
-      std::cout << "varDec node\n";
-      break;
-    case NodeType::IfStatement:
-      std::cout << "IfStmt node\n";
-      break;
-    case NodeType::WhileStatement:
-      std::cout << "WhileStmt node\n";
-      break;
-    }
-}
-
 void print_token_type(TokenType tk) {
   switch (tk) {
     case TokenType::String:
@@ -162,6 +125,7 @@ Program* Parser::parse_ast(std::string& sourceCode) {
 }
 
 Expr* Parser::parse_expr() {
+  print_token_type(curr().type); // testing in prod
   return parse_assignment_expr();
 }
 

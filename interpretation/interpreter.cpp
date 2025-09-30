@@ -2,7 +2,45 @@
 #include "../Errors.hpp"
 #include <cmath>
 
+void print_node_type(NodeType node) {
+  switch (node) {
+    case NodeType::AssignmentExpr:
+      std::cout << "assing node\n";
+      break;
+    case NodeType::BinaryExpr:
+      std::cout << "binary node\n";
+      break;
+    case NodeType::CallExpr:
+      std::cout << "callexpr node\n";
+      break;
+    case NodeType::NumberLiteral:
+      std::cout << "Number node\n";
+      break;
+    case NodeType::FunctionDeclaration:
+      std::cout << "func node\n";
+      break;
+    case NodeType::Identifier:
+      std::cout << "iden node\n";
+      break;
+    case NodeType::Program:
+      std::cout << "program node\n";
+      break;
+    case NodeType::StringLiteral:
+      std::cout << "str node\n";
+    case NodeType::VariableDeclaration:
+      std::cout << "varDec node\n";
+      break;
+    case NodeType::IfStatement:
+      std::cout << "IfStmt node\n";
+      break;
+    case NodeType::WhileStatement:
+      std::cout << "WhileStmt node\n";
+      break;
+    }
+}
+
 RuntimeVal* evaluate(Stmt* astNode, Environment* env) {
+  print_node_type(astNode->kind);
   switch (astNode->kind) {
     case NodeType::Program: {
       return eval_program(static_cast<Program*>(astNode), env);
