@@ -21,10 +21,10 @@ jobs:
           cmake-version: '4.1.x'
 
       - name: Configure
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc
 
       - name: Build
-        run: cmake --build build --config Release --parallel -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc
+        run: cmake --build build --config Release --parallel
 
       - name: Package
         run: cmake --build build --target package
