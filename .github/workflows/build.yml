@@ -5,44 +5,11 @@ on:
     branches: ["main"]
 
 jobs:
-  build-windows:
-    runs-on: windows-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup MSYS2
-        uses: msys2/setup-msys2@v2
-        with:
-          msystem: UCRT64
-          update: true
-          install: >
-            mingw-w64-x86_64-gcc
-            mingw-w64-x86_64-cmake
-            make
-            mingw-w64-x86_64-ninja
-
-      - name: Configure
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-
-      - name: Build
-        run: cmake --build build --config Release --parallel
-
-      - name: Package
-        run: cmake --build build --target package
-
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-latest-binaries
-          path: build/*.zip
-
-  build-unix:
+  build:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
       - name: Checkout repository
@@ -57,7 +24,7 @@ jobs:
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
-        run: cmake --build build --config Release --parallel
+        run: cmake --build build --config Release --parallel -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc
 
       - name: Package
         run: cmake --build build --target package
