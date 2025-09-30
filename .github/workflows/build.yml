@@ -15,8 +15,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up CMake
-        uses: jwlawson/actions-setup-cmake@v1
+      - name: Setup MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          install: >
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-cmake
+            make
+            mingw-w64-x86_64-ninja
 
       - name: Configure
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
