@@ -1,0 +1,21 @@
+#pragma once
+#include <string>
+#include <set>
+#include <unordered_map>
+#include "ValueTypes.hpp"
+
+class Environment {
+  private:
+    Environment* parentEnv;
+    std::set<std::string> constants;
+    std::unordered_map<std::string, RuntimeVal*> values;
+  public:
+    Environment(Environment* pe);
+    RuntimeVal* declareVar(std::string varname, RuntimeVal* value, bool constant);
+    RuntimeVal* assignVar(std::string varname, RuntimeVal* value);
+    RuntimeVal* lookupVar(std::string varname);
+    Environment* resolve(std::string varname);
+};
+
+
+Environment* makeGlobalEnv();
