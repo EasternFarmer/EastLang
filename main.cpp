@@ -9,14 +9,12 @@
 int run(char * argv[]) {
 
   std::string fileContent = read_file(argv[1]);
-  std::cout << "read " << fileContent << "\n"; // testing in prod
 
   Parser* parser = new Parser();
   Environment* env = makeGlobalEnv();
 
   Program* program = parser->parse_ast(fileContent);
-  std::cout << "Done parsing" << "\n"; // testing in prod
-  
+
   evaluate(program, env);
   return 0;
 }

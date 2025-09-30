@@ -44,68 +44,6 @@ OperatorType Parser::get_operator(std::string operatorLiteral) {
   }
 }
 
-void print_token_type(TokenType tk) {
-  switch (tk) {
-    case TokenType::String:
-      std::cout << "str Token\n";
-      break;
-    case TokenType::Number:
-      std::cout << "Number Token\n";
-      break;
-    case TokenType::Identifier:
-      std::cout << "iden Token\n";
-      break;
-    case TokenType::Callable:
-      std::cout << "callable Token\n";
-      break;
-    case TokenType::Const:
-      std::cout << "const Token\n";
-      break;
-    case TokenType::BinaryOperator:
-      std::cout << "binary Token\n";
-      break;
-    case TokenType::Equals:
-      std::cout << "equal Token\n";
-      break;
-    case TokenType::OpenParen:
-      std::cout << "( Token\n";
-      break;
-    case TokenType::ClosedParen:
-      std::cout << ") Token\n";
-      break;
-    case TokenType::OpenBrace:
-      std::cout << "{ Token\n";
-      break;
-    case TokenType::ClosedBrace:
-      std::cout << "} Token\n";
-      break;
-    case TokenType::OpenBracket:
-      std::cout << "[ Token\n";
-      break;
-    case TokenType::ClosedBracket:
-      std::cout << "] Token\n";
-      break;
-    case TokenType::Comma:
-      std::cout << ", Token\n";
-      break;
-    case TokenType::Dot:
-      std::cout << ". Token\n";
-      break;
-    case TokenType::EndOfFile:
-      std::cout << "EOF Token\n";
-      break;
-    case TokenType::If:
-      std::cout << "IF Token\n";
-      break;
-    case TokenType::Else:
-      std::cout << "Else Token\n";
-      break;
-    case TokenType::While:
-      std::cout << "While Token\n";
-      break;
-  }
-}
-
 // Orders Of Prescidence
 //
 // Assignment
@@ -125,7 +63,6 @@ Program* Parser::parse_ast(std::string& sourceCode) {
 }
 
 Expr* Parser::parse_expr() {
-  print_token_type(curr().type); // testing in prod
   return parse_assignment_expr();
 }
 
