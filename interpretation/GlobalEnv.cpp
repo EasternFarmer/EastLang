@@ -99,7 +99,7 @@ RuntimeVal* type(std::vector<RuntimeVal*> args) {
   }
 }
 
-RuntimeVal* sleep(std::vector<RuntimeVal*> args) {
+RuntimeVal* sleep2(std::vector<RuntimeVal*> args) {
   if (args.size() > 1) {
     raise_error("Too Many Arguments to the sleep built-in");
   } else if (args.size() < 1) {
@@ -305,7 +305,7 @@ Environment* makeGlobalEnv() {
 
   env->declareVar("print", MK_NATIVE_FUNC(print), true);
   env->declareVar("type", MK_NATIVE_FUNC(type), true);
-  env->declareVar("sleep", MK_NATIVE_FUNC(sleep), true); // broken
+  env->declareVar("sleep", MK_NATIVE_FUNC(sleep2), true); // broken
   env->declareVar("input", MK_NATIVE_FUNC(input), true);
 
   // comparison funcs
