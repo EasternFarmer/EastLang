@@ -112,6 +112,7 @@ class IfStatement: public Expr {
     IfStatement(): Expr(NodeType::IfStatement) {}
     Expr* check;
     std::vector<Stmt*> body;
+    std::vector<std::pair<Expr*, std::vector<Stmt*>>> else_if_chain;
     std::vector<Stmt*> else_body;
 };
 

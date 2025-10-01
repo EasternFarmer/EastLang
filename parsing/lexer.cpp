@@ -106,7 +106,7 @@ std::deque<Token> tokenize(std::string sourceCode) {
 
       } else if (std::isalnum(str[0])) {
         std::string ret = "";
-        while (std::isalnum(str[0])) {
+        while (std::isalnum(str[0]) || str[0] == '_') {
           ret += str.front();
           str.pop_front();
         }

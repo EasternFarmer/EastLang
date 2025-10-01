@@ -248,13 +248,28 @@ RuntimeVal* eval_if_expr(IfStatement* ifExpr, Environment* env) {
       last_returned = evaluate(stmt, scope);
     }
     return last_returned;
-  } else {
-    RuntimeVal* last_returned = new EmptyVal();
-    for (auto stmt : ifExpr->else_body) {
-      last_returned = evaluate(stmt, scope);
-    }
-    return last_returned;
   }
+
+  // else if's
+  for (auto check_body_pair : ifExpr->else_if_chain) {
+    RuntimeVal* elseIfCheckRet = evaluate(check_body_pair.first, env);
+
+    bool elseIfpassed = static_cast<BooleanVal*>(elseIfCheckRet)->value;
+    if (elseIfpassed) {
+      RuntimeVal* elseIfLast_returned = new EmptyVal();
+      for (auto stmt : check_body_pair.second) {
+        elseIfLast_returned = evaluate(stmt, scope);
+      }
+      return elseIfLast_returned;
+    }
+  }
+
+  // else
+  RuntimeVal* last_returned = new EmptyVal();
+  for (auto stmt : ifExpr->else_body) {
+    last_returned = evaluate(stmt, scope);
+  }
+  return last_returned;
 }
 
 RuntimeVal* eval_while_expr(WhileStatement* whileExpr, Environment* env) {

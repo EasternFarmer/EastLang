@@ -311,10 +311,8 @@ Expr* Parser::parse_primary_expr() {
     }
     case TokenType::If: {
       advance();
-      Expr* check = parse_expr();
       IfStatement* IfExpr = new IfStatement();
-
-      IfExpr->check = check;
+      IfExpr->check = parse_expr();
 
       expect(TokenType::OpenBrace, "Expected an open Brace for if body declaration");
 
@@ -324,15 +322,32 @@ Expr* Parser::parse_primary_expr() {
       }
       expect(TokenType::ClosedBrace, "Expected a closing brace to close the if body definition");
 
+      while (curr().type == TokenType::ElseIf) {
+        advance();
+
+        Expr* check = parse_expr();
+        std::vector<Stmt*> else_if_body;
+
+        expect(TokenType::OpenBrace, "Expected an open Brace for else_if body declaration");
+
+        while (not_eof() && curr().type != TokenType::ClosedBrace) {
+          Stmt* stmt = parse_expr();
+          else_if_body.push_back(stmt);
+        }
+        expect(TokenType::ClosedBrace, "Expected a closing brace to close the else_if body definition");
+
+        IfExpr->else_if_chain.push_back({check, else_if_body});
+      }
+
       if (curr().type == TokenType::Else) {
         advance();
-        expect(TokenType::OpenBrace, "Expected an open Brace for if body declaration");
+        expect(TokenType::OpenBrace, "Expected an open Brace for else body declaration");
 
         while (not_eof() && curr().type != TokenType::ClosedBrace) {
           Stmt* stmt = parse_expr();
           IfExpr->else_body.push_back(stmt);
         }
-        expect(TokenType::ClosedBrace, "Expected a closing brace to close the if body definition");
+        expect(TokenType::ClosedBrace, "Expected a closing brace to close the else body definition");
       }
 
       return IfExpr;

@@ -17,6 +17,7 @@ enum class TokenType {
   
   If,
   Else,
+  ElseIf,
   While,
 
   LogicalExpr,
@@ -43,6 +44,7 @@ inline const std::unordered_map<std::string, TokenType> KEYWORDS = {
   { "const", TokenType::Const },
   { "if", TokenType::If },
   { "else", TokenType::Else },
+  { "else_if", TokenType::ElseIf },
   { "while", TokenType::While },
 
   { "and", TokenType::LogicalExpr },
