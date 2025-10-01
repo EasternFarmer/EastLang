@@ -1,13 +1,12 @@
 /*
-Orders Of Prescidence
+Orders Of Precedence https://en.cppreference.com/w/cpp/language/operator_precedence.html
 
   - Assignment
   - Logic operators (and, or, xor, not)
   - Comparison operators (==, !=, >, <, >=, <=)
   - AdditiveExpr
   - MultiplicitaveExpr
-  - ~~Member~~ // no members as of now
-  - Call
+  - Call   - ~~Member~~ // no members as of now `a().b.c()`
   - PrimaryExpr // callable, if, while definitions (because if everything is an expression, these need to be evaled first)
 
 TODOs:
@@ -159,7 +158,7 @@ Expr* Parser::parse_logical_expr() {
   }
 
   Expr* left = parse_comparison_expr();
-  if (curr().type == TokenType::LogicalExpr) {
+  while (curr().type == TokenType::LogicalExpr) {
     LogicalExpr* logicExpr = new LogicalExpr();
 
     logicExpr->op = get_logical_operator(curr().value);
@@ -168,14 +167,14 @@ Expr* Parser::parse_logical_expr() {
     logicExpr->right = parse_comparison_expr();
     
 
-    return logicExpr;
+    left = logicExpr;
   }
   return left;
 }
 
 Expr* Parser::parse_comparison_expr() {
   Expr* left = parse_additive_expr();
-  if (curr().type == TokenType::ComparisonExpr) {
+  while (curr().type == TokenType::ComparisonExpr) {
     ComparisonExpr* compExpr = new ComparisonExpr();
 
     compExpr->op = get_comparison_operator(curr().value);
@@ -183,7 +182,7 @@ Expr* Parser::parse_comparison_expr() {
     compExpr->left = left;
     compExpr->right = parse_additive_expr();
 
-    return compExpr;
+    left = compExpr;
   }
   return left;
 }
