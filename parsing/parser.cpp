@@ -2,6 +2,8 @@
 Orders Of Prescidence
 
   - Assignment
+  - Logic operators (and, or, xor, not)
+  - Comparison operators (==, !=, >, <, >=, <=)
   - AdditiveExpr
   - MultiplicitaveExpr
   - ~~Member~~ // no members as of now
@@ -10,7 +12,6 @@ Orders Of Prescidence
 
 TODOs:
 
-  - properly add string escapes (Parser::parse_strings implementation)
   - [and, or, xor, not] keywords
   - [==, !=, >, <, >=, <=] operators (maybe, probably)
   - Lists or container-like type
@@ -22,6 +23,7 @@ TODOs:
   - Special functions (if i see them necessary), for example `@import("relative_file_path")`
   - some sort of way to interact with RuntimeVal's (maybe methods `"".join(list)` or modules for it `string.join("", list)`)
   - else_if (Mr. JanekBo wanted this)
+  - argv input
 */
 
 #include "lexer.hpp"
@@ -204,7 +206,7 @@ Expr* Parser::parse_primary_expr() {
     }
     case TokenType::String: {
       StringLiteral* strLit = new StringLiteral();
-      strLit->value = parse_strings(advance().value);
+      strLit->value = advance().value;
 
       return strLit;
     }
@@ -288,8 +290,4 @@ Expr* Parser::parse_primary_expr() {
     default:
       raise_error("Unexpected token: " + curr().value);
   }
-}
-
-std::string Parser::parse_strings(std::string input) {
-  return input; // TODO: parse the strings escape sequences
 }

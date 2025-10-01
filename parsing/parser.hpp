@@ -24,5 +24,4 @@ class Parser {
     Expr* parse_call_expr(Expr* caller);
     std::vector<Expr*> parse_call_args();
     Expr* parse_primary_expr();
-    std::string parse_strings(std::string input);
 };

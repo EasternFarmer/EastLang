@@ -92,6 +92,69 @@ std::deque<Token> tokenize(std::string sourceCode) {
         char end = str.front();
         str.pop_front();
         while (str[0] != end) {
+          if (str[0] == '\\') { // ESCAPE CODES
+            str.pop_front(); // pop \ from the deque
+            if (str[0] == '\'' || str[0] == '"') {
+              ret += str.front();
+              str.pop_front(); // pop ' or " from the deque
+              continue;
+
+            } else if (str[0] == '\\') {
+              ret += '\\';
+              str.pop_front();
+              continue;
+
+            } else if (str[0] == 'n') {
+              str.pop_front();
+              ret += '\n';
+              continue;
+
+            } else if (str[0] == 't') {
+              str.pop_front();
+              ret += '\t';
+              continue;
+
+            } else if (str[0] == 'r') {
+              str.pop_front();
+              ret += '\r';
+              continue;
+
+            } else if (str[0] == 'v') {
+              str.pop_front();
+              ret += '\v';
+              continue;
+
+            } else if (std::isdigit(str[0])) {
+              std::string esc = "";
+              esc += str.front(); // escape codes \nnn where n is a digit
+              str.pop_front();
+
+              esc += str.front();
+              str.pop_front();
+              
+              esc += str.front();
+              str.pop_front();
+
+              char val = static_cast<char>(std::stoi(esc, nullptr, 8));
+              ret += val;
+              continue;
+
+            } else if (str[0] == 'x') {
+              str.pop_front(); // pop x
+
+              std::string esc = "";
+              esc += str.front(); // escape codes \xnn where n is a digit
+              str.pop_front();
+
+              esc += str.front();
+              str.pop_front();
+
+              char val = static_cast<char>(std::stoi(esc, nullptr, 16));
+              ret += val;
+              continue;
+            }
+            str.pop_front(); // remove the char after the slash
+          }
           ret += str.front();
           str.pop_front();
         }
