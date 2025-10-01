@@ -101,9 +101,6 @@ RuntimeVal* type(std::vector<RuntimeVal*> args) {
     case ValueType::String: {
       return MK_STRING("string");
     }
-    case ValueType::List: {
-      return MK_STRING("list");
-    }
     default:
       raise_error("invalid runtime type");
   }
