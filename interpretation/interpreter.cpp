@@ -180,7 +180,6 @@ NumberVal* eval_binary_math(NumberVal* a, NumberVal* b, OperatorType op) {
 RuntimeVal* eval_binary_expr(BinaryExpr* binary, Environment* env) {
   RuntimeVal* left = evaluate(binary->left, env);
   RuntimeVal* right = evaluate(binary->right, env);
-  // TODO: fix math
 
   if (left->type == ValueType::Number && right->type == ValueType::Number) {
     return eval_binary_math(
@@ -188,6 +187,11 @@ RuntimeVal* eval_binary_expr(BinaryExpr* binary, Environment* env) {
       static_cast<NumberVal*>(right),
       binary->expr_operator
     );
+  }
+  if (left->type == ValueType::String && right->type == ValueType::String) {
+    StringVal* leftStr = static_cast<StringVal*>(left);
+    StringVal* rightStr = static_cast<StringVal*>(right);
+    return MK_STRING(leftStr->value + rightStr->value);
   }
 
   return new EmptyVal();
