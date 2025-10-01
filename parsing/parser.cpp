@@ -1,3 +1,29 @@
+/*
+Orders Of Prescidence
+
+  - Assignment
+  - AdditiveExpr
+  - MultiplicitaveExpr
+  - ~~Member~~ // no members as of now
+  - Call
+  - PrimaryExpr // callable, if, while definitions (because if everything is an expression, these need to be evaled first)
+
+TODOs:
+
+  - properly add string escapes (Parser::parse_strings implementation)
+  - [and, or, xor, not] keywords
+  - [==, !=, >, <, >=, <=] operators (maybe, probably)
+  - Lists or container-like type
+  - OOP (far future)
+  - Pattern matching (maybe a new type)
+  - Maybe objects
+  - Imports
+  - Maybe FFI
+  - Special functions (if i see them necessary), for example `@import("relative_file_path")`
+  - some sort of way to interact with RuntimeVal's (maybe methods `"".join(list)` or modules for it `string.join("", list)`)
+  - else_if (Mr. JanekBo wanted this)
+*/
+
 #include "lexer.hpp"
 #include "ast.hpp"
 #include "parser.hpp"
@@ -9,6 +35,10 @@ bool Parser::not_eof() {
 
 Token Parser::curr() {
   return tokens[0];
+}
+
+Token Parser::look_ahead(int n) {
+  return tokens[n];
 }
 
 Token Parser::advance() {
@@ -44,14 +74,6 @@ OperatorType Parser::get_operator(std::string operatorLiteral) {
   }
 }
 
-// Orders Of Prescidence
-//
-// Assignment
-// AdditiveExpr
-// MultiplicitaveExpr
-// ~Member~
-// Call
-// PrimaryExpr // callable declaration too!
 Program* Parser::parse_ast(std::string& sourceCode) {
   tokens = tokenize(sourceCode);
   Program* program = new Program();
@@ -129,7 +151,7 @@ Expr* Parser::parse_multiplicative_expr() {
 }
 
 Expr* Parser::parse_call_member_expr() {
-  Expr* left = parse_primary_expr();
+  Expr* left = parse_primary_expr(); // no members as of now
   if (curr().type == TokenType::OpenParen) {
     left = parse_call_expr(left);
   }
@@ -182,7 +204,7 @@ Expr* Parser::parse_primary_expr() {
     }
     case TokenType::String: {
       StringLiteral* strLit = new StringLiteral();
-      strLit->value = advance().value;
+      strLit->value = parse_strings(advance().value);
 
       return strLit;
     }
@@ -266,4 +288,8 @@ Expr* Parser::parse_primary_expr() {
     default:
       raise_error("Unexpected token: " + curr().value);
   }
+}
+
+std::string Parser::parse_strings(std::string input) {
+  return input; // TODO: parse the strings escape sequences
 }

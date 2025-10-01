@@ -7,6 +7,7 @@ class Parser {
     std::deque<Token> tokens;
     bool not_eof();
     Token curr();
+    Token look_ahead(int n);
     Token advance();
     Token expect(TokenType expected_token, std::string error_message);
     OperatorType get_operator(std::string operatorLiteral);
@@ -23,4 +24,5 @@ class Parser {
     Expr* parse_call_expr(Expr* caller);
     std::vector<Expr*> parse_call_args();
     Expr* parse_primary_expr();
+    std::string parse_strings(std::string input);
 };
