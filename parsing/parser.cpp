@@ -12,8 +12,6 @@ Orders Of Prescidence
 
 TODOs:
 
-  - [and, or, xor, not] keywords
-  - [==, !=, >, <, >=, <=] operators (maybe, probably)
   - Lists or container-like type
   - OOP (far future)
   - Pattern matching (maybe a new type)
@@ -60,7 +58,7 @@ Token Parser::expect(TokenType expected_token, std::string error_message) {
   return value;
 }
 
-OperatorType Parser::get_operator(std::string operatorLiteral) {
+OperatorType Parser::get_math_operator(std::string operatorLiteral) {
   if (operatorLiteral == "+") {
     return OperatorType::add;
   } else if (operatorLiteral == "-") {
@@ -73,6 +71,36 @@ OperatorType Parser::get_operator(std::string operatorLiteral) {
     return OperatorType::modulo;
   } else {
     raise_error("Unexpected operator, " + operatorLiteral);
+  }
+}
+
+LogicalOperatorType Parser::get_logical_operator(std::string operatorLiteral) {
+  if (operatorLiteral == "and") {
+    return LogicalOperatorType::And;
+  } else if (operatorLiteral == "or") {
+    return LogicalOperatorType::Or;
+  } else if (operatorLiteral == "xor") {
+    return LogicalOperatorType::Xor;
+  } else {
+    raise_error("Unexpected logical operator, " + operatorLiteral);
+  }
+}
+
+ComparisonOperatorType Parser::get_comparison_operator(std::string operatorLiteral) {
+  if (operatorLiteral == "==") {
+    return ComparisonOperatorType::equal;
+  } else if (operatorLiteral == ">") {
+    return ComparisonOperatorType::greater;
+  } else if (operatorLiteral == ">=") {
+    return ComparisonOperatorType::greater_equal;
+  } else if (operatorLiteral == "<") {
+    return ComparisonOperatorType::less;
+  } else if (operatorLiteral == "<=") {
+    return ComparisonOperatorType::less_equal;
+  } else if (operatorLiteral == "!=") {
+    return ComparisonOperatorType::not_equal;
+  } else {
+    raise_error("Unexpected logical operator, " + operatorLiteral);
   }
 }
 
@@ -106,7 +134,7 @@ Expr* Parser::parse_assignment_expr() {
     var->value = parse_expr();
     return var;
   }
-  Expr* left = parse_additive_expr();
+  Expr* left = parse_logical_expr();
 
   if (curr().type == TokenType::Equals) {
     advance(); // eat the curr equal sign
@@ -120,6 +148,46 @@ Expr* Parser::parse_assignment_expr() {
   return left;
 }
 
+Expr* Parser::parse_logical_expr() {
+  if (curr().type == TokenType::Not) {
+    advance();
+    Expr* negatedExpr = parse_logical_expr();
+
+    NegateExpr* neg = new NegateExpr();
+    neg->expr = negatedExpr;
+    return neg;
+  }
+
+  Expr* left = parse_comparison_expr();
+  if (curr().type == TokenType::LogicalExpr) {
+    LogicalExpr* logicExpr = new LogicalExpr();
+
+    logicExpr->op = get_logical_operator(curr().value);
+    advance();
+    logicExpr->left = left;
+    logicExpr->right = parse_comparison_expr();
+    
+
+    return logicExpr;
+  }
+  return left;
+}
+
+Expr* Parser::parse_comparison_expr() {
+  Expr* left = parse_additive_expr();
+  if (curr().type == TokenType::ComparisonExpr) {
+    ComparisonExpr* compExpr = new ComparisonExpr();
+
+    compExpr->op = get_comparison_operator(curr().value);
+    advance();
+    compExpr->left = left;
+    compExpr->right = parse_additive_expr();
+
+    return compExpr;
+  }
+  return left;
+}
+
 Expr* Parser::parse_additive_expr() {
   Expr* left = parse_multiplicative_expr();
   while (curr().value == "+" || curr().value == "-") {
@@ -127,7 +195,7 @@ Expr* Parser::parse_additive_expr() {
     Expr* right = parse_multiplicative_expr();
 
     BinaryExpr* binary = new BinaryExpr();
-    binary->expr_operator = get_operator(operatorType);
+    binary->expr_operator = get_math_operator(operatorType);
     binary->left = left;
     binary->right = right;
 
@@ -143,7 +211,7 @@ Expr* Parser::parse_multiplicative_expr() {
     Expr* right = parse_call_member_expr();
 
     BinaryExpr* binary = new BinaryExpr();
-    binary->expr_operator = get_operator(operatorType);
+    binary->expr_operator = get_math_operator(operatorType);
     binary->left = left;
     binary->right = right;
 

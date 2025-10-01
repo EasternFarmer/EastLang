@@ -53,12 +53,42 @@ std::deque<Token> tokenize(std::string sourceCode) {
       str.pop_front();
       tokens.push_back(Token(value, TokenType::BinaryOperator));
       
-    } else if (str[0] == '=') {
-      char value = str.front();
+    } else if (str[0] == '!') {
       str.pop_front();
-      tokens.push_back(Token(value, TokenType::Equals));
+      if (str[0] == '=') {
+        str.pop_front();
+        tokens.push_back(Token("!=", TokenType::ComparisonExpr));
+      } else {
+        tokens.push_back(Token("not", TokenType::Not));
+      }
+    } else if (str[0] == '=') {
+      str.pop_front();
+      if (str[0] == '=') {
+        str.pop_front();
+        tokens.push_back(Token("==", TokenType::ComparisonExpr));
+      } else {
+        tokens.push_back(Token('=', TokenType::Equals));
+      }
+      
+    } else if (str[0] == '>') {
+      str.pop_front();
+      if (str[0] == '=') {
+        str.pop_front();
+        tokens.push_back(Token(">=", TokenType::ComparisonExpr));
+      } else {
+        tokens.push_back(Token('>', TokenType::ComparisonExpr));
+      }
+      
+    } else if (str[0] == '<') {
+      str.pop_front();
+      if (str[0] == '=') {
+        str.pop_front();
+        tokens.push_back(Token("<=", TokenType::ComparisonExpr));
+      } else {
+        tokens.push_back(Token('<', TokenType::ComparisonExpr));
+      }
     
-    } else if (str[0] == '`') {
+    } else if (str[0] == '`') { // block comments
       str.pop_front();
       while (str[0] != '`') {
         str.pop_front();

@@ -47,8 +47,163 @@ RuntimeVal* evaluate(Stmt* astNode, Environment* env) {
       VariableDeclaration* varDec = static_cast<VariableDeclaration*>(astNode);
       return env->declareVar(varDec->identifier, evaluate(varDec->value, env), varDec->constant);
     }
+    case NodeType::NegateExpr: {
+      NegateExpr* negExpr = static_cast<NegateExpr*>(astNode);
+
+      RuntimeVal* ret = evaluate(negExpr->expr, env);
+
+      if (ret->type == ValueType::Boolean) {
+        BooleanVal* boolVal = static_cast<BooleanVal*>(ret);
+        return MK_BOOL(!(boolVal->value));
+
+      } else if (ret->type == ValueType::Number) {
+        NumberVal* numVal = static_cast<NumberVal*>(ret);
+        return MK_BOOL(!(numVal->value));
+
+      } else if (ret->type == ValueType::Empty) {
+        return MK_BOOL(true);
+      }
+      return MK_BOOL(false);
+    }
+    case NodeType::ComparisonExpr: {
+      ComparisonExpr* compExpr = static_cast<ComparisonExpr*>(astNode);
+
+      auto* left = evaluate(compExpr->left, env);
+      auto* right = evaluate(compExpr->right, env);
+      auto op = compExpr->op;
+
+      return eval_comparison_expr(left, right, op);
+    }
+    case NodeType::LogicalExpr: {
+      LogicalExpr* logExpr = static_cast<LogicalExpr*>(astNode);
+
+      auto* left = evaluate(logExpr->left, env);
+      auto* right = evaluate(logExpr->right, env);
+      auto op = logExpr->op;
+
+      return eval_logical_expr(left, right, op);
+    }
     default:
       raise_error("invalid Node Type");
+  }
+}
+
+RuntimeVal* eval_comparison_expr(RuntimeVal* left, RuntimeVal* right, ComparisonOperatorType op) {
+  switch (op) {
+    case ComparisonOperatorType::equal: {
+      if (left->type == ValueType::Boolean && right->type == ValueType::Boolean) {
+        return MK_BOOL(
+          static_cast<BooleanVal*>(left)->value == static_cast<BooleanVal*>(right)->value
+        );
+      } else if (left->type == ValueType::Number && right->type == ValueType::Number) {
+        return MK_BOOL(
+          static_cast<NumberVal*>(left)->value == static_cast<NumberVal*>(right)->value
+        );
+      } else if (left->type == ValueType::String && right->type == ValueType::String) {
+        return MK_BOOL(
+          static_cast<StringVal*>(left)->value == static_cast<StringVal*>(right)->value
+        );
+      } else if (left->type == ValueType::Empty && right->type == ValueType::Empty) {
+        return MK_BOOL(true);
+      }
+      return MK_BOOL(false);
+    }
+    case ComparisonOperatorType::not_equal: {
+      if (left->type == ValueType::Boolean && right->type == ValueType::Boolean) {
+        return MK_BOOL(
+          static_cast<BooleanVal*>(left)->value != static_cast<BooleanVal*>(right)->value
+        );
+      } else if (left->type == ValueType::Number && right->type == ValueType::Number) {
+        return MK_BOOL(
+          static_cast<NumberVal*>(left)->value != static_cast<NumberVal*>(right)->value
+        );
+      } else if (left->type == ValueType::String && right->type == ValueType::String) {
+        return MK_BOOL(
+          static_cast<StringVal*>(left)->value != static_cast<StringVal*>(right)->value
+        );
+      } else if (left->type == ValueType::Empty && right->type == ValueType::Empty) {
+        return MK_BOOL(false);
+      }
+      return MK_BOOL(true);
+    }
+    case ComparisonOperatorType::greater: {
+      if (left->type == ValueType::Number && right->type == ValueType::Number) {
+        return MK_BOOL(
+          static_cast<NumberVal*>(left)->value > static_cast<NumberVal*>(right)->value
+        );
+      }
+      raise_error("can't use '>' on this data type");
+    }
+    case ComparisonOperatorType::greater_equal: {
+      if (left->type == ValueType::Number && right->type == ValueType::Number) {
+        return MK_BOOL(
+          static_cast<NumberVal*>(left)->value >= static_cast<NumberVal*>(right)->value
+        );
+      }
+      raise_error("can't use '>=' on this data type");
+    }
+    case ComparisonOperatorType::less: {
+      if (left->type == ValueType::Number && right->type == ValueType::Number) {
+        return MK_BOOL(
+          static_cast<NumberVal*>(left)->value < static_cast<NumberVal*>(right)->value
+        );
+      }
+      raise_error("can't use '<' on this data type");
+    }
+    case ComparisonOperatorType::less_equal: {
+      if (left->type == ValueType::Number && right->type == ValueType::Number) {
+        return MK_BOOL(
+          static_cast<NumberVal*>(left)->value <= static_cast<NumberVal*>(right)->value
+        );
+      }
+      raise_error("can't use '<=' on this data type");
+    }
+    default:
+      raise_error("invalid operator");
+  }
+}
+
+bool eval_runtimeval_to_bool(RuntimeVal* var) {
+  switch (var->type) {
+    case ValueType::Boolean:
+      return static_cast<BooleanVal*>(var)->value;
+    case ValueType::Number:
+      return static_cast<NumberVal*>(var)->value != 0.0;
+    case ValueType::String:
+      return (static_cast<StringVal*>(var)->value).length() > 0;
+    case ValueType::Function:
+      return true;
+    case ValueType::NativeFn:
+      return true;
+    case ValueType::Empty:
+      return false;
+    default:
+      raise_error("invalid RuntimeVal value in logical expr");
+  }
+}
+
+RuntimeVal* eval_logical_expr(RuntimeVal* left, RuntimeVal* right, LogicalOperatorType op) {
+  switch (op) {
+    case LogicalOperatorType::And: {
+      return MK_BOOL(
+        eval_runtimeval_to_bool(left)
+        && eval_runtimeval_to_bool(right)
+      );
+    }
+    case LogicalOperatorType::Or: {
+      return MK_BOOL(
+        eval_runtimeval_to_bool(left)
+        || eval_runtimeval_to_bool(right)
+      );
+    }
+    case LogicalOperatorType::Xor: {
+      return MK_BOOL(
+        eval_runtimeval_to_bool(left)
+        ^ eval_runtimeval_to_bool(right)
+      );
+    }
+    default:
+      raise_error("Invalid Logical operator");
   }
 }
 

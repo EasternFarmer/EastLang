@@ -3,6 +3,12 @@
 
 RuntimeVal* evaluate(Stmt* astNode, Environment* env);
 
+RuntimeVal* eval_comparison_expr(RuntimeVal* left, RuntimeVal* right, ComparisonOperatorType op);
+
+bool eval_runtimeval_to_bool(RuntimeVal* var);
+
+RuntimeVal* eval_logical_expr(RuntimeVal* left, RuntimeVal* right, LogicalOperatorType op);
+
 RuntimeVal* eval_call_expr(CallExpr* callexpr, Environment* env);
 
 RuntimeVal* eval_if_expr(IfStatement* ifExpr, Environment* env);

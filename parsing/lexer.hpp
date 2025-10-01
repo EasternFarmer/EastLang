@@ -14,9 +14,14 @@ enum class TokenType {
   Const,
   BinaryOperator,
   Equals,
+  
   If,
   Else,
   While,
+
+  LogicalExpr,
+  Not,
+  ComparisonExpr,
 
   OpenParen,
   ClosedParen,
@@ -39,6 +44,11 @@ inline const std::unordered_map<std::string, TokenType> KEYWORDS = {
   { "if", TokenType::If },
   { "else", TokenType::Else },
   { "while", TokenType::While },
+
+  { "and", TokenType::LogicalExpr },
+  { "or", TokenType::LogicalExpr },
+  { "xor", TokenType::LogicalExpr },
+  { "not", TokenType::Not },
 };
 
 class Token {

@@ -31,7 +31,11 @@ void print_runtime_val(RuntimeVal* var) {
   switch (var->type) {
     case ValueType::Boolean: {
       BooleanVal* Bool = static_cast<BooleanVal*>(var);
-      std::cout << Bool->value;
+      if (Bool->value) {
+        std::cout << "true";
+      } else {
+        std::cout << "false";
+      }
       break;
     }
     case ValueType::Empty: {
@@ -133,193 +137,6 @@ RuntimeVal* input(std::vector<RuntimeVal*> args) {
   return MK_STRING(out);
 }
 
-// comparison funcs
-
-RuntimeVal* not_equal(std::vector<RuntimeVal*> args) {
-  if (args.size() > 2) {
-    raise_error("Too Many Arguments to the built-in");
-  } else if (args.size() < 2) {
-    raise_error("Too Few Arguments to the built-in");
-  } 
-  
-  if (
-    args[0]->type == ValueType::Number && args[1]->type == ValueType::Number
-  ) {
-    double left = static_cast<NumberVal*>(args[0])->value;
-    double right = static_cast<NumberVal*>(args[1])->value;
-  
-    if (left == right) {
-      return MK_BOOL(true);
-    }
-    return MK_BOOL(false);
-  } else if (
-    args[0]->type == ValueType::String && args[1]->type == ValueType::String
-  ) {
-    std::string left = static_cast<StringVal*>(args[0])->value;
-    std::string right = static_cast<StringVal*>(args[1])->value;
-    if (left != right) {
-      return MK_BOOL(true);
-    }
-    return MK_BOOL(false);
-  } else if (
-    args[0]->type == ValueType::Boolean && args[1]->type == ValueType::Boolean
-  ) {
-    bool left = static_cast<BooleanVal*>(args[0])->value;
-    bool right = static_cast<BooleanVal*>(args[1])->value;
-    if (left != right) {
-      return MK_BOOL(true);
-    }
-    return MK_BOOL(false);
-  } else if (
-    args[0]->type == ValueType::Empty && args[1]->type == ValueType::Empty
-  ) {
-    return MK_BOOL(false);
-  }
-  return MK_BOOL(true);
-}
-
-RuntimeVal* equal(std::vector<RuntimeVal*> args) {
-  if (args.size() > 2) {
-    raise_error("Too Many Arguments to the built-in");
-  } else if (args.size() < 2) {
-    raise_error("Too Few Arguments to the built-in");
-  } 
-  
-  if (
-    args[0]->type == ValueType::Number && args[1]->type == ValueType::Number
-  ) {
-    double left = static_cast<NumberVal*>(args[0])->value;
-    double right = static_cast<NumberVal*>(args[1])->value;
-  
-    if (left == right) {
-      return MK_BOOL(true);
-    }
-    return MK_BOOL(false);
-  } else if (
-    args[0]->type == ValueType::String && args[1]->type == ValueType::String
-  ) {
-    std::string left = static_cast<StringVal*>(args[0])->value;
-    std::string right = static_cast<StringVal*>(args[1])->value;
-    if (left == right) {
-      return MK_BOOL(true);
-    }
-    return MK_BOOL(false);
-  } else if (
-    args[0]->type == ValueType::Boolean && args[1]->type == ValueType::Boolean
-  ) {
-    bool left = static_cast<BooleanVal*>(args[0])->value;
-    bool right = static_cast<BooleanVal*>(args[1])->value;
-    if (left == right) {
-      return MK_BOOL(true);
-    }
-    return MK_BOOL(false);
-  } else if (
-    args[0]->type == ValueType::Empty && args[1]->type == ValueType::Empty
-  ) {
-    return MK_BOOL(true);
-  }
-  std::cout << "111 ";
-  return MK_BOOL(false);
-}
-
-RuntimeVal* greater(std::vector<RuntimeVal*> args) {
-  if (args.size() > 2) {
-    raise_error("Too Many Arguments to the built-in");
-  } else if (args.size() < 2) {
-    raise_error("Too Few Arguments to the built-in");
-  } else if (args[0]->type != ValueType::Number) {
-    raise_error("built-in requires Numbers");
-  } else if (args[1]->type != ValueType::Number) {
-    raise_error("built-in requires Numbers");
-  }
-  double left = static_cast<NumberVal*>(args[0])->value;
-  double right = static_cast<NumberVal*>(args[1])->value;
-
-  if (left > right) {
-    return MK_BOOL(true);
-  }
-  return MK_BOOL(false);
-}
-
-RuntimeVal* less(std::vector<RuntimeVal*> args) {
-  if (args.size() > 2) {
-    raise_error("Too Many Arguments to the built-in");
-  } else if (args.size() < 2) {
-    raise_error("Too Few Arguments to the built-in");
-  } else if (args[0]->type != ValueType::Number) {
-    raise_error("built-in requires Integers or Floats");
-  } else if (args[1]->type != ValueType::Number) {
-    raise_error("built-in requires Integers or Floats");
-  }
-  double left = static_cast<NumberVal*>(args[0])->value;
-  double right = static_cast<NumberVal*>(args[1])->value;
-
-  if (left < right) {
-    return MK_BOOL(true);
-  }
-  return MK_BOOL(false);
-}
-
-RuntimeVal* greater_equal(std::vector<RuntimeVal*> args) {
-  if (args.size() > 2) {
-    raise_error("Too Many Arguments to the built-in");
-  } else if (args.size() < 2) {
-    raise_error("Too Few Arguments to the built-in");
-  } else if (args[0]->type != ValueType::Number) {
-    raise_error("built-in requires Integers or Floats");
-  } else if (args[1]->type != ValueType::Number) {
-    raise_error("built-in requires Integers or Floats");
-  }
-  double left = static_cast<NumberVal*>(args[0])->value;
-  double right = static_cast<NumberVal*>(args[1])->value;
-
-  if (left >= right) {
-    return MK_BOOL(true);
-  }
-  return MK_BOOL(false);
-}
-
-RuntimeVal* less_equal(std::vector<RuntimeVal*> args) {
-  if (args.size() > 2) {
-    raise_error("Too Many Arguments to the built-in");
-  } else if (args.size() < 2) {
-    raise_error("Too Few Arguments to the built-in");
-  } else if (args[0]->type != ValueType::Number) {
-    raise_error("built-in requires Integers or Floats");
-  } else if (args[1]->type != ValueType::Number) {
-    raise_error("built-in requires Integers or Floats");
-  }
-  double left = static_cast<NumberVal*>(args[0])->value;
-  double right = static_cast<NumberVal*>(args[1])->value;
-
-  if (left <= right) {
-    return MK_BOOL(true);
-  }
-  return MK_BOOL(false);
-}
-
-RuntimeVal* _and(std::vector<RuntimeVal*> args) {
-  if (
-    args[0]->type != ValueType::Boolean && args[1]->type != ValueType::Boolean
-  ) {
-    raise_error("expected two booleans");
-  }
-  BooleanVal* left = static_cast<BooleanVal*>(args[0]);
-  BooleanVal* right = static_cast<BooleanVal*>(args[1]);
-  return MK_BOOL(left->value && right->value);
-}
-
-RuntimeVal* _or(std::vector<RuntimeVal*> args) {
-  if (
-    args[0]->type != ValueType::Boolean && args[1]->type != ValueType::Boolean
-  ) {
-    raise_error("expected two booleans");
-  }
-  BooleanVal* left = static_cast<BooleanVal*>(args[0]);
-  BooleanVal* right = static_cast<BooleanVal*>(args[1]);
-  return MK_BOOL(left->value || right->value);
-}
-
 Environment* makeGlobalEnv() {
   Environment* env = new Environment(nullptr);
 
@@ -337,17 +154,6 @@ Environment* makeGlobalEnv() {
   env->declareVar("type", MK_NATIVE_FUNC(type), true);
   env->declareVar("sleep", MK_NATIVE_FUNC(sleep2), true); // broken
   env->declareVar("input", MK_NATIVE_FUNC(input), true);
-
-  // comparison funcs
-  env->declareVar("not_equal", MK_NATIVE_FUNC(not_equal), true);
-  env->declareVar("equal", MK_NATIVE_FUNC(equal), true);
-  env->declareVar("greater", MK_NATIVE_FUNC(greater), true);
-  env->declareVar("less", MK_NATIVE_FUNC(less), true);
-  env->declareVar("greater_equal", MK_NATIVE_FUNC(greater_equal), true);
-  env->declareVar("less_equal", MK_NATIVE_FUNC(less_equal), true);
-
-  env->declareVar("and", MK_NATIVE_FUNC(_and), true);
-  env->declareVar("or", MK_NATIVE_FUNC(_or), true);
 
   return env;
 }

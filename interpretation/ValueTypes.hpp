@@ -14,7 +14,6 @@ enum class ValueType {
   Boolean,
   NativeFn,
   Function,
-  IfExpr,
 };
 
 class RuntimeVal {
