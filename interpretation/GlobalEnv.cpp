@@ -101,6 +101,9 @@ RuntimeVal* type(std::vector<RuntimeVal*> args) {
     case ValueType::String: {
       return MK_STRING("string");
     }
+    case ValueType::List: {
+      return MK_STRING("list");
+    }
     default:
       raise_error("invalid runtime type");
   }
@@ -298,6 +301,28 @@ RuntimeVal* less_equal(std::vector<RuntimeVal*> args) {
   return MK_BOOL(false);
 }
 
+RuntimeVal* _and(std::vector<RuntimeVal*> args) {
+  if (
+    args[0]->type != ValueType::Boolean && args[1]->type != ValueType::Boolean
+  ) {
+    raise_error("expected two booleans");
+  }
+  BooleanVal* left = static_cast<BooleanVal*>(args[0]);
+  BooleanVal* right = static_cast<BooleanVal*>(args[1]);
+  return MK_BOOL(left->value && right->value);
+}
+
+RuntimeVal* _or(std::vector<RuntimeVal*> args) {
+  if (
+    args[0]->type != ValueType::Boolean && args[1]->type != ValueType::Boolean
+  ) {
+    raise_error("expected two booleans");
+  }
+  BooleanVal* left = static_cast<BooleanVal*>(args[0]);
+  BooleanVal* right = static_cast<BooleanVal*>(args[1]);
+  return MK_BOOL(left->value || right->value);
+}
+
 Environment* makeGlobalEnv() {
   Environment* env = new Environment(nullptr);
 
@@ -323,6 +348,9 @@ Environment* makeGlobalEnv() {
   env->declareVar("less", MK_NATIVE_FUNC(less), true);
   env->declareVar("greater_equal", MK_NATIVE_FUNC(greater_equal), true);
   env->declareVar("less_equal", MK_NATIVE_FUNC(less_equal), true);
+
+  env->declareVar("and", MK_NATIVE_FUNC(_and), true);
+  env->declareVar("or", MK_NATIVE_FUNC(_or), true);
 
   return env;
 }
