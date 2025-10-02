@@ -4,7 +4,7 @@ Orders Of Precedence https://en.cppreference.com/w/cpp/language/operator_precede
   - Assignment
   - Logic operators (and, or, xor, not)
   - Comparison operators (==, !=, >, <, >=, <=)
-  - bitwise shift // TODO
+  - bitwise shift
   - AdditiveExpr
   - MultiplicitaveExpr
   - Call   - ~~Member~~ // no members as of now `a().b.c()` - Subscript
@@ -12,7 +12,6 @@ Orders Of Precedence https://en.cppreference.com/w/cpp/language/operator_precede
 
 TODOs:
 
-  - Lists or container-like type
   - OOP (far future)
   - Pattern matching (maybe a new type)
   - Maybe objects
@@ -20,7 +19,6 @@ TODOs:
   - Maybe FFI
   - Special functions (if i see them necessary), for example `@import("relative_file_path")`
   - some sort of way to interact with RuntimeVal's (maybe methods `"".join(list)` or modules for it `string.join("", list)`)
-  - argv input
 */
 
 #include "lexer.hpp"
@@ -174,16 +172,35 @@ Expr* Parser::parse_logical_expr() {
 }
 
 Expr* Parser::parse_comparison_expr() {
-  Expr* left = parse_additive_expr();
+  Expr* left = parse_bitwise_shift_expr();
   while (curr().type == TokenType::ComparisonExpr) {
     ComparisonExpr* compExpr = new ComparisonExpr();
 
     compExpr->op = get_comparison_operator(curr().value);
     advance();
     compExpr->left = left;
-    compExpr->right = parse_additive_expr();
+    compExpr->right = parse_bitwise_shift_expr();
 
     left = compExpr;
+  }
+  return left;
+}
+
+Expr* Parser::parse_bitwise_shift_expr() {
+  Expr* left = parse_additive_expr();
+  while (curr().type == TokenType::BitwiseShift) {
+    BitShiftExpr* bitShiftExpr = new BitShiftExpr();
+
+    if (advance().value == ">>") {
+      bitShiftExpr->shiftRight = true;
+    } else {
+      bitShiftExpr->shiftRight = false;
+    }
+
+    bitShiftExpr->left = left;
+    bitShiftExpr->right = parse_additive_expr();
+
+    left = bitShiftExpr;
   }
   return left;
 }
@@ -422,6 +439,7 @@ Expr* Parser::parse_primary_expr() {
       return array;
     }
     default:
+      print_token_type(token);
       raise_error("Unexpected token: " + curr().value);
   }
 }

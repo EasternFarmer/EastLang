@@ -48,7 +48,10 @@ int repl() {
 
     // Produce AST From sourc-code
     Program* program = parser->parse_ast(input);
-    evaluate(program, env);
+
+    RuntimeVal* ret = evaluate(program, env);
+    if (ret->type != ValueType::Empty)
+      print({ ret }); // language specific function located in interpretation\GlobalEnv.cpp
   }
   return 0;
 }

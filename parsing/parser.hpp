@@ -23,6 +23,7 @@ class Parser {
     Expr* parse_assignment_expr();
     Expr* parse_logical_expr();
     Expr* parse_comparison_expr();
+    Expr* parse_bitwise_shift_expr();
     Expr* parse_additive_expr();
     Expr* parse_multiplicative_expr();
     Expr* parse_call_member_expr();

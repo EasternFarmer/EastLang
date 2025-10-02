@@ -151,6 +151,7 @@ class ComparisonExpr: public Expr {
 class BitShiftExpr: public Expr {
   public:
     BitShiftExpr(): Expr(NodeType::BitShiftExpr) {}
+    bool shiftRight;
     Expr* left;
     Expr* right;
 };

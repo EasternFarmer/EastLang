@@ -75,6 +75,9 @@ std::deque<Token> tokenize(std::string sourceCode) {
       if (str[0] == '=') {
         str.pop_front();
         tokens.push_back(Token(">=", TokenType::ComparisonExpr));
+      } else if (str[0] == '>') {
+        str.pop_front();
+        tokens.push_back(Token(">>", TokenType::BitwiseShift));
       } else {
         tokens.push_back(Token('>', TokenType::ComparisonExpr));
       }
@@ -84,6 +87,9 @@ std::deque<Token> tokenize(std::string sourceCode) {
       if (str[0] == '=') {
         str.pop_front();
         tokens.push_back(Token("<=", TokenType::ComparisonExpr));
+      } else if (str[0] == '<') {
+        str.pop_front();
+        tokens.push_back(Token("<<", TokenType::BitwiseShift));
       } else {
         tokens.push_back(Token('<', TokenType::ComparisonExpr));
       }

@@ -2,13 +2,10 @@
 #include "../Errors.hpp"
 #include "Environment.hpp"
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
+#define CONST_PI 3.14159265358979323846
+#define CONST_E 2.71828182845904523536
 
-#ifndef M_E
-#define M_E 2.71828182845904523536
-#endif
+#define NATIVE_FN(name) RuntimeVal* name(std::vector<RuntimeVal*> args)
 
 #ifdef _WIN32
     #include <windows.h>
@@ -80,7 +77,7 @@ void print_runtime_val(RuntimeVal* var) {
   }
 }
 
-RuntimeVal* print(std::vector<RuntimeVal*> args) {
+NATIVE_FN(print) {
   for (auto val : args) {
     // std::string str = static_cast<StringVal*>(val)->value; // everything has a value field
     print_runtime_val(val);
@@ -90,7 +87,7 @@ RuntimeVal* print(std::vector<RuntimeVal*> args) {
   return new EmptyVal();
 }
 
-RuntimeVal* type(std::vector<RuntimeVal*> args) {
+NATIVE_FN(type) {
   if (args.size() > 1) {
     raise_error("Too Many Arguments to the type built-in");
   } else if (args.size() < 1) {
@@ -123,7 +120,7 @@ RuntimeVal* type(std::vector<RuntimeVal*> args) {
   }
 }
 
-RuntimeVal* sleep2(std::vector<RuntimeVal*> args) {
+NATIVE_FN(sleep2) {
   if (args.size() > 1) {
     raise_error("Too Many Arguments to the sleep built-in");
   } else if (args.size() < 1) {
@@ -138,7 +135,14 @@ RuntimeVal* sleep2(std::vector<RuntimeVal*> args) {
   return new EmptyVal();
 }
 
-RuntimeVal* input(std::vector<RuntimeVal*> args) {
+NATIVE_FN(DEBUG_list_all) {
+  for (int i = 0; i <= std::stoi("777", nullptr, 8); i++) {
+    std::cout << std::oct << i << ": " << static_cast<char>(i) << '\n';
+  }
+  return new EmptyVal();
+}
+
+NATIVE_FN(input) {
   if (args.size() > 0) {
     for (auto arg : args) {
       print_runtime_val(arg);
@@ -148,6 +152,30 @@ RuntimeVal* input(std::vector<RuntimeVal*> args) {
   std::string out;
   std::getline(std::cin, out);
   return MK_STRING(out);
+}
+
+NATIVE_FN(ord) {
+  if (args[0]->type != ValueType::String)
+    raise_error("ord can only be used with a one lenght string");
+
+  StringVal* str = static_cast<StringVal*>(args[0]);
+
+  if (str->value.length() != 1)
+    raise_error("ord can only be used with a one lenght string");
+  
+  return MK_NUM(str->value.at(0));
+}
+
+NATIVE_FN(chr) {
+  if (args[0]->type != ValueType::Number)
+    raise_error("chr can only be used with a number");
+
+  NumberVal* num = static_cast<NumberVal*>(args[0]);
+  try {
+    return MK_STRING(std::string(1, (char)((int)num->value)));
+  } catch (const std::exception& e) {
+    raise_error("couldn't turn number to char\n");
+  }
 }
 
 Environment* makeGlobalEnv() {
@@ -160,13 +188,18 @@ Environment* makeGlobalEnv() {
   env->declareVar("break", new BreakVal(), true);
   env->declareVar("continue", new ContinueVal(), true);
   
-  env->declareVar("pi", MK_NUM(M_PI), true);
-  env->declareVar("e", MK_NUM(M_E), true);
+  env->declareVar("pi", MK_NUM(CONST_PI), true);
+  env->declareVar("e", MK_NUM(CONST_E), true);
 
   env->declareVar("print", MK_NATIVE_FUNC(print), true);
   env->declareVar("type", MK_NATIVE_FUNC(type), true);
   env->declareVar("sleep", MK_NATIVE_FUNC(sleep2), true); // broken
   env->declareVar("input", MK_NATIVE_FUNC(input), true);
+
+  env->declareVar("ord", MK_NATIVE_FUNC(ord), true);
+  env->declareVar("chr", MK_NATIVE_FUNC(chr), true);
+
+  env->declareVar("DEBUG_list_all", MK_NATIVE_FUNC(DEBUG_list_all), true);
 
   return env;
 }

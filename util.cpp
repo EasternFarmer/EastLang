@@ -123,6 +123,9 @@ void print_node_type(NodeType node) {
     case NodeType::ArrayLiteral:
       std::cout << "Array node\n";
       break;
+    case NodeType::BitShiftExpr:
+      std::cout << "BitShift node\n";
+      break;
     default:
       std::cout << "Unsupported node\n";
     }

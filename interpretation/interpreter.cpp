@@ -124,6 +124,24 @@ RuntimeVal* evaluate(Stmt* astNode, Environment* env) {
           raise_error("can't substring this type");
       }
     }
+    case NodeType::BitShiftExpr: {
+      BitShiftExpr* bitShift = static_cast<BitShiftExpr*>(astNode);
+
+      RuntimeVal* left = evaluate(bitShift->left, env);
+      RuntimeVal* right = evaluate(bitShift->right, env);
+
+      if (left->type != ValueType::Number || left->type != ValueType::Number)
+        raise_error("can't use bitshift with non-number values");
+
+      auto* leftCast = static_cast<NumberVal*>(left);
+      auto* rightCast = static_cast<NumberVal*>(right);
+
+      if (bitShift->shiftRight) {
+        return MK_NUM((int)leftCast->value >> (int)rightCast->value);
+      } else {
+        return MK_NUM((int)leftCast->value << (int)rightCast->value);
+      }
+    }
     default:
       print_node_type(astNode->kind);
       raise_error("invalid Node Type");

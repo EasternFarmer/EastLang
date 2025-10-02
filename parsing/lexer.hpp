@@ -13,6 +13,7 @@ enum class TokenType {
   Callable,
   Const,
   BinaryOperator,
+  BitwiseShift,
   Equals,
   
   If,
@@ -39,7 +40,7 @@ enum class TokenType {
   EndOfFile,
 };
 
-inline const std::unordered_map<std::string, TokenType> KEYWORDS = {
+static const std::unordered_map<std::string, TokenType> KEYWORDS = {
   { "callable", TokenType::Callable },
   { "const", TokenType::Const },
   { "if", TokenType::If },
