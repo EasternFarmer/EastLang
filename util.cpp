@@ -10,7 +10,7 @@ std::string pwd() {
   return cwd.string();
 }
 
-std::string read_file(char * path) {
+std::string read_file(const char * path) {
   std::ifstream file(path);
   if (!file) {
     std::cerr << "Could not open file " << path << "\n";
@@ -125,6 +125,12 @@ void print_node_type(NodeType node) {
       break;
     case NodeType::BitShiftExpr:
       std::cout << "BitShift node\n";
+      break;
+    case NodeType::SpecialExpr:
+      std::cout << "SpecialExpr node\n";
+      break;
+    case NodeType::MemberExpr:
+      std::cout << "MemberExpr node\n";
       break;
     default:
       std::cout << "Unsupported node\n";

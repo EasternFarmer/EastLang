@@ -36,6 +36,7 @@ enum class TokenType {
 
   Comma,
   Dot,
+  Monkey, // @
 
   EndOfFile,
 };

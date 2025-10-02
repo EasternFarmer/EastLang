@@ -3,6 +3,10 @@
 
 RuntimeVal* evaluate(Stmt* astNode, Environment* env);
 
+RuntimeVal* eval_member_expr(MemberExpr* specialExpr, Environment* env);
+
+RuntimeVal* eval_special_expr(SpecialExpr* specialExpr, Environment* env);
+
 RuntimeVal* eval_comparison_expr(RuntimeVal* left, RuntimeVal* right, ComparisonOperatorType op);
 
 bool eval_runtimeval_to_bool(RuntimeVal* var);

@@ -32,5 +32,6 @@ class Parser {
     Expr* parse_call_expr(Expr* caller);
     std::vector<Expr*> parse_call_args();
     std::vector<Expr*> parse_list_elements();
+    Expr* parse_special_expr();
     Expr* parse_primary_expr();
 };

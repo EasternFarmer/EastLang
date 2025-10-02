@@ -6,6 +6,7 @@
 class Environment;
 
 enum class ValueType {
+  Module,
   Empty,
   Break, // for breaking out of the loops
   Continue, // continue out of the loops
@@ -27,28 +28,30 @@ class RuntimeVal {
 };
 
 
+class ModuleVal: public RuntimeVal{
+  public:
+    ModuleVal(): RuntimeVal(ValueType::Module) { }
+    Environment* moduleEnv;
+};
+
 class EmptyVal: public RuntimeVal{
   public:
-    EmptyVal(): RuntimeVal(ValueType::Empty) {
-    }
+    EmptyVal(): RuntimeVal(ValueType::Empty) { }
 };
 
 class BreakVal: public RuntimeVal{
   public:
-    BreakVal(): RuntimeVal(ValueType::Break) {
-    }
+    BreakVal(): RuntimeVal(ValueType::Break) { }
 };
 
 class ContinueVal: public RuntimeVal{
   public:
-    ContinueVal(): RuntimeVal(ValueType::Continue) {
-    }
+    ContinueVal(): RuntimeVal(ValueType::Continue) { }
 };
 
 class ArrayVal: public RuntimeVal{
   public:
-    ArrayVal(): RuntimeVal(ValueType::Array) {
-    }
+    ArrayVal(): RuntimeVal(ValueType::Array) { }
     std::vector<RuntimeVal*> elements;
 };
 
@@ -62,8 +65,7 @@ inline ArrayVal* MK_ARRAY(std::vector<RuntimeVal*> elements) {
 
 class NumberVal: public RuntimeVal{
   public:
-    NumberVal(): RuntimeVal(ValueType::Number) {
-    }
+    NumberVal(): RuntimeVal(ValueType::Number) { }
     double value;
 };
 
@@ -77,8 +79,7 @@ inline NumberVal* MK_NUM(double n) {
 
 class StringVal: public RuntimeVal{
   public:
-    StringVal(): RuntimeVal(ValueType::String) {
-    }
+    StringVal(): RuntimeVal(ValueType::String) { }
     std::string value;
 };
 
@@ -92,8 +93,7 @@ inline StringVal* MK_STRING(std::string n) {
 
 class BooleanVal: public RuntimeVal{
   public:
-    BooleanVal(): RuntimeVal(ValueType::Boolean) {
-    }
+    BooleanVal(): RuntimeVal(ValueType::Boolean) { }
     bool value;
 };
 
@@ -107,8 +107,7 @@ inline BooleanVal* MK_BOOL(bool n) {
 
 class NativeFnVal: public RuntimeVal{
   public:
-    NativeFnVal(): RuntimeVal(ValueType::NativeFn) {
-    }
+    NativeFnVal(): RuntimeVal(ValueType::NativeFn) { }
     std::function<RuntimeVal*(std::vector<RuntimeVal*>)> call;
 };
 
@@ -124,8 +123,7 @@ inline NativeFnVal* MK_NATIVE_FUNC(
 
 class FunctionVal: public RuntimeVal{
   public:
-    FunctionVal(): RuntimeVal(ValueType::Function) {
-    }
+    FunctionVal(): RuntimeVal(ValueType::Function) { }
     std::vector<std::string> parameters;
     Environment* declarationEnv;
     std::vector<Stmt*> body;

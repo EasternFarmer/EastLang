@@ -4,7 +4,7 @@ Orders Of Precedence https://en.cppreference.com/w/cpp/language/operator_precede
   - Assignment
   - Logic operators (and, or, xor, not)
   - Comparison operators (==, !=, >, <, >=, <=)
-  - bitwise shift
+  - Bitwise shift
   - AdditiveExpr
   - MultiplicitaveExpr
   - Call   - ~~Member~~ // no members as of now `a().b.c()` - Subscript
@@ -268,10 +268,16 @@ Expr* Parser::parse_subscript_expr(Expr* left) {
 }
 
 Expr* Parser::parse_member_expr(Expr* left) {
-  std::cout << "dot expressions get ignored as of now\n";
   advance(); // eat the dot
-  Token iden = expect(TokenType::Identifier, "expected an identifier after the dot expr"); // eat the identifier, `left.identifier`
-  return left;
+  Expr* iden = parse_primary_expr();
+  if (iden->kind != NodeType::Identifier)
+    raise_error("expected an identifier after the dot expr");
+
+  MemberExpr* memberExpr = new MemberExpr();
+  memberExpr->left = left;
+  memberExpr->identifier = static_cast<Identifier*>(iden)->value;
+
+  return memberExpr;
 }
 
 Expr* Parser::parse_call_expr(Expr* caller) {
@@ -317,6 +323,34 @@ std::vector<Expr*> Parser::parse_list_elements() {
   }
   expect(TokenType::ClosedBracket, "Expected a closing bracket"); // eat the closing bracket
   return args;
+}
+
+Expr* Parser::parse_special_expr() {
+  if (curr().type != TokenType::Identifier)
+    raise_error("missing identifier after @");
+
+  Identifier* iden = static_cast<Identifier*>(parse_primary_expr());
+
+  SpecialExpr* specialExpr = new SpecialExpr();
+  specialExpr->identifier = iden->value;
+
+  if (curr().type != TokenType::OpenParen) { // if i want to add special value or sum
+    raise_error("Expected a opening paren after special function identifier " + iden->value);
+  }
+  advance();
+
+  specialExpr->isFunction = true;
+
+  while (not_eof() && curr().type != TokenType::ClosedParen) {
+    if (curr().type != TokenType::String)
+      raise_error("param to the special function should be a string");
+
+    specialExpr->args.push_back(static_cast<StringLiteral*>(parse_primary_expr()));
+  }
+
+  expect(TokenType::ClosedParen, "Missing closing paren for special function " + iden->value);
+
+  return specialExpr;
 }
 
 Expr* Parser::parse_primary_expr() {
@@ -437,6 +471,10 @@ Expr* Parser::parse_primary_expr() {
       ArrayLiteral* array = new ArrayLiteral();
       array->elements = parse_list_elements();
       return array;
+    }
+    case TokenType::Monkey: {
+      advance();
+      return parse_special_expr();
     }
     default:
       print_token_type(token);

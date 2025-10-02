@@ -72,6 +72,10 @@ void print_runtime_val(RuntimeVal* var) {
       std::cout << str->value;
       break;
     }
+    case ValueType::Module: {
+      std::cout << "module";
+      break;
+    }
     default:
       raise_error("invalid runtime type");
   }
@@ -114,6 +118,9 @@ NATIVE_FN(type) {
     }
     case ValueType::Array: {
       return MK_STRING("array");
+    }
+    case ValueType::Module: {
+      return MK_STRING("module");
     }
     default:
       raise_error("invalid runtime type");

@@ -70,6 +70,10 @@ std::deque<Token> tokenize(std::string sourceCode) {
         tokens.push_back(Token('=', TokenType::Equals));
       }
       
+    } else if (str[0] == '@') {
+      str.pop_front();
+      tokens.push_back(Token('@', TokenType::Monkey));
+
     } else if (str[0] == '>') {
       str.pop_front();
       if (str[0] == '=') {

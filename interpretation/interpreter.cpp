@@ -1,6 +1,8 @@
 #include "interpreter.hpp"
 #include "../Errors.hpp"
 #include "../util.hpp"
+#include "../parsing/parser.hpp" // @import()
+#include "GlobalEnv.hpp"
 #include <cmath>
 
 
@@ -142,9 +144,50 @@ RuntimeVal* evaluate(Stmt* astNode, Environment* env) {
         return MK_NUM((int)leftCast->value << (int)rightCast->value);
       }
     }
+    case NodeType::SpecialExpr: {
+      return eval_special_expr(static_cast<SpecialExpr*>(astNode), env);
+    }
+    case NodeType::MemberExpr: {
+      return eval_member_expr(static_cast<MemberExpr*>(astNode), env);
+    }
     default:
       print_node_type(astNode->kind);
       raise_error("invalid Node Type");
+  }
+}
+
+RuntimeVal* eval_member_expr(MemberExpr* memberExpr, Environment* env) {
+  RuntimeVal* left = evaluate(memberExpr->left, env);
+  if (left->type == ValueType::Module) {
+    ModuleVal* moduleVal = static_cast<ModuleVal*>(left);
+    return moduleVal->moduleEnv->lookupVar(memberExpr->identifier);
+    
+  } else {
+    raise_error("Unsuported type for member (dot) Expr");
+  }
+}
+
+RuntimeVal* eval_special_expr(SpecialExpr* specialExpr, Environment* env) {
+  if (!specialExpr->isFunction) {
+    raise_error("non-function Special Expr are not supported");
+  }
+  
+  if (specialExpr->identifier == "import") {
+    if (specialExpr->args.size() != 1) {
+      raise_error("cant import more than 1 file in a single expresion");
+    }
+
+    ModuleVal* moduleVal = new ModuleVal(); 
+    moduleVal->moduleEnv = makeGlobalEnv();
+
+    std::string sourceCode = read_file((pwd() + "/" + static_cast<StringLiteral*>(specialExpr->args[0])->value).c_str());
+
+    evaluate(Parser().parse_ast(sourceCode), moduleVal->moduleEnv);
+
+    return moduleVal;
+
+  } else {
+    raise_error("Invalid special Expr identifier");
   }
 }
 

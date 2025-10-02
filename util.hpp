@@ -5,7 +5,7 @@
 
 std::string pwd();
 
-std::string read_file(char * path);
+std::string read_file(const char * path);
 
 void print_token_type(TokenType tk);
 

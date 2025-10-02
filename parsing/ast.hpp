@@ -3,16 +3,18 @@
 #include <string>
 
 enum class NodeType {
-  // STATEMENTS
+  // EXPRESSIONS
   Program,
   VariableDeclaration,
   FunctionDeclaration,
   IfStatement,
   WhileStatement,
-  // EXPRESSIONS
+
   AssignmentExpr,
   CallExpr,
+  SpecialExpr,
   SubscriptExpr,
+  MemberExpr,
 
   NegateExpr,
   LogicalExpr,
@@ -93,6 +95,21 @@ class CallExpr: public Expr {
     CallExpr(): Expr(NodeType::CallExpr) {}
     Expr* caller;
     std::vector<Expr*> args;
+};
+
+class SpecialExpr: public Expr { // @import("file")
+  public:
+    SpecialExpr(): Expr(NodeType::SpecialExpr) {}
+    std::string identifier;
+    bool isFunction;
+    std::vector<Expr*> args;
+};
+
+class MemberExpr: public Expr {
+  public:
+    MemberExpr(): Expr(NodeType::MemberExpr) {}
+    Expr* left;
+    std::string identifier;
 };
 
 class BinaryExpr: public Expr {
