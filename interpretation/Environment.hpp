@@ -16,6 +16,3 @@ class Environment {
     RuntimeVal* lookupVar(std::string varname);
     Environment* resolve(std::string varname);
 };
-
-
-Environment* makeGlobalEnv();

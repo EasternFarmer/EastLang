@@ -26,7 +26,10 @@ class Parser {
     Expr* parse_additive_expr();
     Expr* parse_multiplicative_expr();
     Expr* parse_call_member_expr();
+    Expr* parse_subscript_expr(Expr* iden);
+    Expr* parse_member_expr(Expr* iden);
     Expr* parse_call_expr(Expr* caller);
     std::vector<Expr*> parse_call_args();
+    std::vector<Expr*> parse_list_elements();
     Expr* parse_primary_expr();
 };

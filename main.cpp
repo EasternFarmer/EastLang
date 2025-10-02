@@ -2,16 +2,23 @@
 #include "parsing/lexer.hpp"
 #include "parsing/parser.hpp"
 #include "interpretation/Environment.hpp"
+#include "interpretation/GlobalEnv.hpp"
 #include "interpretation/interpreter.hpp"
 
 #include "util.hpp"
 
-int run(char * argv[]) {
+int run(int argc, char * argv[]) {
 
   std::string fileContent = read_file(argv[1]);
 
   Parser* parser = new Parser();
   Environment* env = makeGlobalEnv();
+
+  auto* argArray = new ArrayVal();
+  for (int i = 1; i < argc; i++) { // convert argv after the interpreter path into an array
+      argArray->elements.push_back(MK_STRING(argv[i]));
+  }
+  env->declareVar("argv", argArray, true);
 
   Program* program = parser->parse_ast(fileContent);
 
@@ -51,7 +58,7 @@ int main(int argc, char * argv[]) {
   if (argc < 2) {
     return repl();
   } else {
-    return run(argv);
+    return run(argc, argv);
   }
 
   return 0;

@@ -12,15 +12,18 @@ enum class NodeType {
   // EXPRESSIONS
   AssignmentExpr,
   CallExpr,
+  SubscriptExpr,
 
   NegateExpr,
   LogicalExpr,
   ComparisonExpr,
   // Literals
   StringLiteral,
+  ArrayLiteral,
   NumberLiteral,
   Identifier,
-  BinaryExpr
+  BinaryExpr,
+  BitShiftExpr,
 };
 
 enum class OperatorType {
@@ -145,17 +148,37 @@ class ComparisonExpr: public Expr {
     ComparisonOperatorType op;
 };
 
+class BitShiftExpr: public Expr {
+  public:
+    BitShiftExpr(): Expr(NodeType::BitShiftExpr) {}
+    Expr* left;
+    Expr* right;
+};
+
+class SubscriptExpr: public Expr {
+  public:
+    SubscriptExpr(): Expr(NodeType::SubscriptExpr) {}
+    Expr* left;
+    Expr* value;
+};
+
 // Literals
 class NumberLiteral: public Expr {
   public:
     NumberLiteral(): Expr(NodeType::NumberLiteral) {}
-    int value;
+    double value;
 };
 
 class StringLiteral: public Expr {
   public:
     StringLiteral(): Expr(NodeType::StringLiteral) {}
     std::string value;
+};
+
+class ArrayLiteral: public Expr {
+  public:
+    ArrayLiteral(): Expr(NodeType::ArrayLiteral) {}
+    std::vector<Expr*> elements;
 };
 
 class Identifier: public Expr {

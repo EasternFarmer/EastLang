@@ -4,9 +4,10 @@ Orders Of Precedence https://en.cppreference.com/w/cpp/language/operator_precede
   - Assignment
   - Logic operators (and, or, xor, not)
   - Comparison operators (==, !=, >, <, >=, <=)
+  - bitwise shift // TODO
   - AdditiveExpr
   - MultiplicitaveExpr
-  - Call   - ~~Member~~ // no members as of now `a().b.c()`
+  - Call   - ~~Member~~ // no members as of now `a().b.c()` - Subscript
   - PrimaryExpr // callable, if, while definitions (because if everything is an expression, these need to be evaled first)
 
 TODOs:
@@ -19,7 +20,6 @@ TODOs:
   - Maybe FFI
   - Special functions (if i see them necessary), for example `@import("relative_file_path")`
   - some sort of way to interact with RuntimeVal's (maybe methods `"".join(list)` or modules for it `string.join("", list)`)
-  - else_if (Mr. JanekBo wanted this)
   - argv input
 */
 
@@ -27,6 +27,7 @@ TODOs:
 #include "ast.hpp"
 #include "parser.hpp"
 #include "../Errors.hpp"
+#include "../util.hpp"
 
 bool Parser::not_eof() {
   return tokens[0].type != TokenType::EndOfFile;
@@ -221,9 +222,38 @@ Expr* Parser::parse_multiplicative_expr() {
 
 Expr* Parser::parse_call_member_expr() {
   Expr* left = parse_primary_expr(); // no members as of now
-  if (curr().type == TokenType::OpenParen) {
-    left = parse_call_expr(left);
+  while (curr().type == TokenType::OpenParen || curr().type == TokenType::OpenBracket || curr().type == TokenType::Dot) {
+    switch (curr().type) {
+      case TokenType::OpenParen:
+        left = parse_call_expr(left);
+        break;
+      case TokenType::OpenBracket:
+        left = parse_subscript_expr(left);
+        break;
+      case TokenType::Dot:
+        left = parse_member_expr(left);
+        break;
+    }
   }
+  return left;
+}
+
+Expr* Parser::parse_subscript_expr(Expr* left) {
+  if (curr().type != TokenType::OpenBracket) return left;
+  advance();
+
+  SubscriptExpr* sub = new SubscriptExpr();
+  sub->left = left;
+  sub->value = parse_expr();
+
+  expect(TokenType::ClosedBracket, "expected closing braket on subscript end");
+  return sub;
+}
+
+Expr* Parser::parse_member_expr(Expr* left) {
+  std::cout << "dot expressions get ignored as of now\n";
+  advance(); // eat the dot
+  Token iden = expect(TokenType::Identifier, "expected an identifier after the dot expr"); // eat the identifier, `left.identifier`
   return left;
 }
 
@@ -252,6 +282,23 @@ std::vector<Expr*> Parser::parse_call_args() {
     }
   }
   expect(TokenType::ClosedParen, "Expected a closing paren"); // eat the closing paren
+  return args;
+}
+
+std::vector<Expr*> Parser::parse_list_elements() {
+  advance(); // eat the open braket
+  std::vector<Expr*> args;
+  if (curr().type != TokenType::ClosedBracket) {
+    Expr* arg = parse_expr();
+    args.push_back(arg);
+
+    while (curr().type == TokenType::Comma) {
+      advance(); // eat the comma
+      Expr* arg = parse_expr();
+      args.push_back(arg);
+    }
+  }
+  expect(TokenType::ClosedBracket, "Expected a closing bracket"); // eat the closing bracket
   return args;
 }
 
@@ -368,6 +415,11 @@ Expr* Parser::parse_primary_expr() {
       expect(TokenType::ClosedBrace, "Expected a closing brace to close the if body definition");
 
       return WhileExpr;
+    }
+    case TokenType::OpenBracket: {
+      ArrayLiteral* array = new ArrayLiteral();
+      array->elements = parse_list_elements();
+      return array;
     }
     default:
       raise_error("Unexpected token: " + curr().value);

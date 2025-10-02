@@ -1,5 +1,6 @@
 #include "interpreter.hpp"
 #include "../Errors.hpp"
+#include "../util.hpp"
 #include <cmath>
 
 
@@ -16,6 +17,16 @@ RuntimeVal* evaluate(Stmt* astNode, Environment* env) {
     }
     case NodeType::NumberLiteral: {
       return MK_NUM(static_cast<NumberLiteral*>(astNode)->value);
+    }
+    case NodeType::ArrayLiteral: {
+      ArrayLiteral* arrayExpr = static_cast<ArrayLiteral*>(astNode);
+
+      ArrayVal* array = new ArrayVal();
+      for (auto elem : arrayExpr->elements) {
+        array->elements.push_back(evaluate(elem, env));
+      }
+
+      return array;
     }
     case NodeType::StringLiteral: {
       return MK_STRING(static_cast<StringLiteral*>(astNode)->value);
@@ -83,7 +94,38 @@ RuntimeVal* evaluate(Stmt* astNode, Environment* env) {
 
       return eval_logical_expr(left, right, op);
     }
+    case NodeType::SubscriptExpr: {
+      SubscriptExpr* subExpr = static_cast<SubscriptExpr*>(astNode);
+
+      RuntimeVal* left = evaluate(subExpr->left, env);
+
+      RuntimeVal* index = evaluate(subExpr->value, env);
+
+      switch (left->type) {
+        case ValueType::Array: {
+          ArrayVal* arrayExpr = static_cast<ArrayVal*>(left);
+
+          if (index->type != ValueType::Number) raise_error("array index must be a number");
+
+          int arrayIndex = (int)(static_cast<NumberVal*>(index)->value);
+
+          return arrayExpr->elements[arrayIndex];
+        }
+        case ValueType::String: {
+          StringVal* stringExpr = static_cast<StringVal*>(left);
+
+          if (index->type != ValueType::Number) raise_error("string index must be a number");
+
+          int stringIndex = (int)(static_cast<NumberVal*>(index)->value);
+
+          return MK_STRING(std::string(1, stringExpr->value.at(stringIndex)));
+        }
+        default:
+          raise_error("can't substring this type");
+      }
+    }
     default:
+      print_node_type(astNode->kind);
       raise_error("invalid Node Type");
   }
 }
@@ -223,7 +265,7 @@ RuntimeVal* eval_call_expr(CallExpr* callexpr, Environment* env) {
     for (int i = 0; i < func->parameters.size(); i++) {
       scope->declareVar(func->parameters[i], args[i], false);
     }
-    
+
     RuntimeVal* last_returned = new EmptyVal();
     for (auto stmt : func->body) {
       last_returned = evaluate(stmt, scope);

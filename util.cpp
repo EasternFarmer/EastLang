@@ -120,5 +120,10 @@ void print_node_type(NodeType node) {
     case NodeType::WhileStatement:
       std::cout << "WhileStmt node\n";
       break;
+    case NodeType::ArrayLiteral:
+      std::cout << "Array node\n";
+      break;
+    default:
+      std::cout << "Unsupported node\n";
     }
 }

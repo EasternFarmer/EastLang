@@ -9,6 +9,7 @@ enum class ValueType {
   Empty,
   Break, // for breaking out of the loops
   Continue, // continue out of the loops
+  Array,
   Number,
   String,
   Boolean,
@@ -43,6 +44,21 @@ class ContinueVal: public RuntimeVal{
     ContinueVal(): RuntimeVal(ValueType::Continue) {
     }
 };
+
+class ArrayVal: public RuntimeVal{
+  public:
+    ArrayVal(): RuntimeVal(ValueType::Array) {
+    }
+    std::vector<RuntimeVal*> elements;
+};
+
+inline ArrayVal* MK_ARRAY(std::vector<RuntimeVal*> elements) {
+  ArrayVal* newArray = new ArrayVal();
+
+  newArray->elements = elements;
+
+  return newArray;
+}
 
 class NumberVal: public RuntimeVal{
   public:

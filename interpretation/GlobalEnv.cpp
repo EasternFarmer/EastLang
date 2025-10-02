@@ -56,6 +56,16 @@ void print_runtime_val(RuntimeVal* var) {
       std::cout << ")";
       break;
     }
+    case ValueType::Array: {
+      ArrayVal* Func = static_cast<ArrayVal*>(var);
+      std::cout << "[";
+      for (auto param : Func->elements) {
+        print_runtime_val(param);
+        std::cout << ", ";
+      }
+      std::cout << "]";
+      break;
+    }
     case ValueType::NativeFn: {
       std::cout << "built-in";
       break;
@@ -104,6 +114,9 @@ RuntimeVal* type(std::vector<RuntimeVal*> args) {
     }
     case ValueType::String: {
       return MK_STRING("string");
+    }
+    case ValueType::Array: {
+      return MK_STRING("array");
     }
     default:
       raise_error("invalid runtime type");
