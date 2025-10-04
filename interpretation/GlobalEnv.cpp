@@ -185,6 +185,22 @@ NATIVE_FN(chr) {
   }
 }
 
+NATIVE_FN(dir) {
+  if (args.size() != 1)
+    raise_error("Expected only one argument");
+  
+  if (args[0]->type != ValueType::Module)
+    raise_error("currently only Modules have members");
+
+  ModuleVal* _module = static_cast<ModuleVal*>(args[0]);
+
+  std::vector<RuntimeVal*> values;
+  for (auto var : _module->moduleEnv->values) {
+    values.push_back(MK_STRING(var.first));
+  }
+  return MK_ARRAY(values);
+}
+
 Environment* makeGlobalEnv() {
   Environment* env = new Environment(nullptr);
 
@@ -203,6 +219,7 @@ Environment* makeGlobalEnv() {
   env->declareVar("sleep", MK_NATIVE_FUNC(sleep2), true);
   env->declareVar("input", MK_NATIVE_FUNC(input), true);
 
+  env->declareVar("dir", MK_NATIVE_FUNC(dir), true);
   env->declareVar("ord", MK_NATIVE_FUNC(ord), true);
   env->declareVar("chr", MK_NATIVE_FUNC(chr), true);
 

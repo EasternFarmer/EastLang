@@ -7,9 +7,11 @@
 class Environment {
   private:
     Environment* parentEnv;
+  public:
+    // for build-ins
     std::set<std::string> constants;
     std::unordered_map<std::string, RuntimeVal*> values;
-  public:
+
     Environment(Environment* pe = nullptr);
     RuntimeVal* declareVar(std::string varname, RuntimeVal* value, bool constant = false);
     RuntimeVal* overrideVar(std::string varname, RuntimeVal* value);
