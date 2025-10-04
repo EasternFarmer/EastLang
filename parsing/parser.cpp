@@ -131,6 +131,31 @@ Expr* Parser::parse_assignment_expr() {
     var->identifier = static_cast<Identifier*>(iden)->value;
     var->value = parse_expr();
     return var;
+  } else if (curr().type == TokenType::Local) {
+    advance(); // eat local keyword
+    Expr* iden = parse_primary_expr();
+
+    if (iden->kind != NodeType::Identifier) {
+      raise_error("Expected a identifier after a const keyword");
+    }
+
+    Expr* value;
+
+    if (curr().type == TokenType::Equals) {
+      advance();
+      value = parse_expr();
+    } else {
+      Identifier* empty = new Identifier();
+      empty->value = "empty";
+
+      value = empty;
+    }
+
+    AssignmentExpr* var = new AssignmentExpr();
+    var->local = true;
+    var->identifier = iden;
+    var->value = value;
+    return var;
   }
   Expr* left = parse_logical_expr();
 

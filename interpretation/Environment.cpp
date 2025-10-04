@@ -29,8 +29,13 @@ RuntimeVal* Environment::overrideVar(std::string varname, RuntimeVal* value) {
   return value;
 };
 
-RuntimeVal* Environment::assignVar(std::string varname, RuntimeVal* value) {
-  Environment* env = resolve(varname);
+RuntimeVal* Environment::assignVar(std::string varname, RuntimeVal* value, bool local) {
+  Environment* env;
+  if (local) {
+    env = this;
+  } else {
+    env = resolve(varname);
+  }
 
   if (env == nullptr || env->values.find(varname) == env->values.end()) { // if undefined
     return this->declareVar(varname, value);

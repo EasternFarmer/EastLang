@@ -95,6 +95,12 @@ void print_token_type(TokenType tk) {
     case TokenType::Monkey:
       std::cout << "Monkey Token\n";
       break;
+    case TokenType::Not:
+      std::cout << "Not Token\n";
+      break;
+    case TokenType::ComparisonExpr:
+      std::cout << "ComparisonExpr Token\n";
+      break;
   }
 }
 

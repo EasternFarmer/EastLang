@@ -421,7 +421,8 @@ RuntimeVal* eval_assignment(AssignmentExpr* assign, Environment* env) {
   Expr* name = assign->identifier;
   if (name->kind == NodeType::Identifier) {
     RuntimeVal* val = evaluate(assign->value, env);
-    return env->assignVar(static_cast<Identifier*>(name)->value, val);
+    return env->assignVar(static_cast<Identifier*>(name)->value, val, assign->local);
+
   } else if (name->kind == NodeType::SubscriptExpr) {
     SubscriptExpr* subs = static_cast<SubscriptExpr*>(name);
 

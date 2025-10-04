@@ -200,7 +200,7 @@ Environment* makeGlobalEnv() {
 
   env->declareVar("print", MK_NATIVE_FUNC(print), true);
   env->declareVar("type", MK_NATIVE_FUNC(type), true);
-  env->declareVar("sleep", MK_NATIVE_FUNC(sleep2), true); // broken
+  env->declareVar("sleep", MK_NATIVE_FUNC(sleep2), true);
   env->declareVar("input", MK_NATIVE_FUNC(input), true);
 
   env->declareVar("ord", MK_NATIVE_FUNC(ord), true);

@@ -12,6 +12,7 @@ enum class TokenType {
   Identifier,
   Callable,
   Const,
+  Local,
   BinaryOperator,
   BitwiseShift,
   Equals,
@@ -44,6 +45,7 @@ enum class TokenType {
 static const std::unordered_map<std::string, TokenType> KEYWORDS = {
   { "callable", TokenType::Callable },
   { "const", TokenType::Const },
+  { "local", TokenType::Local },
   { "if", TokenType::If },
   { "else", TokenType::Else },
   { "else_if", TokenType::ElseIf },

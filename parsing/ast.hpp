@@ -86,6 +86,7 @@ class VariableDeclaration: public Expr {
 class AssignmentExpr: public Expr {
   public:
     AssignmentExpr(): Expr(NodeType::AssignmentExpr) {}
+    bool local = false;
     Expr* identifier;
     Expr* value;
 };
