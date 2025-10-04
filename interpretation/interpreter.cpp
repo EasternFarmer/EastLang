@@ -4,6 +4,7 @@
 #include "../parsing/parser.hpp" // @import()
 #include "GlobalEnv.hpp"
 #include <cmath>
+#include "modules/main.hpp"
 
 
 RuntimeVal* evaluate(Stmt* astNode, Environment* env) {
@@ -167,20 +168,30 @@ RuntimeVal* eval_member_expr(MemberExpr* memberExpr, Environment* env) {
   }
 }
 
-RuntimeVal* eval_special_expr(SpecialExpr* specialExpr, Environment* env) {
-  if (!specialExpr->isFunction) {
-    raise_error("non-function Special Expr are not supported");
+ModuleName strToModuleName(std::string name) {
+  if (name == "<array>") {
+    return ModuleName::Array;
+  } else {
+    raise_error("Invalid built-in module name: "+ name);
   }
-  
+}
+
+RuntimeVal* eval_special_expr(SpecialExpr* specialExpr, Environment* env) {
   if (specialExpr->identifier == "import") {
     if (specialExpr->args.size() != 1) {
-      raise_error("cant import more than 1 file in a single expresion");
+      raise_error("cant import more than 1 module in a single expresion");
     }
 
-    ModuleVal* moduleVal = new ModuleVal(); 
+    std::string moduleName = static_cast<StringLiteral*>(specialExpr->args[0])->value;
+
+    if (moduleName.at(0) == '<') {
+      return MK_MODULE(importBuiltInModule(strToModuleName(moduleName)));
+    }
+    
+    ModuleVal* moduleVal = new ModuleVal();
     moduleVal->moduleEnv = makeGlobalEnv();
 
-    std::string sourceCode = read_file((pwd() + "/" + static_cast<StringLiteral*>(specialExpr->args[0])->value).c_str());
+    std::string sourceCode = read_file((pwd() + "/" + moduleName).c_str());
 
     evaluate(Parser().parse_ast(sourceCode), moduleVal->moduleEnv);
 

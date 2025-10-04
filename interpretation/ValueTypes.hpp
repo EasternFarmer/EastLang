@@ -34,6 +34,16 @@ class ModuleVal: public RuntimeVal{
     Environment* moduleEnv;
 };
 
+enum class ModuleName {
+  Array,
+};
+
+inline ModuleVal* MK_MODULE(Environment* env) {
+  ModuleVal* _module = new ModuleVal();
+  _module->moduleEnv = env;
+  return _module;
+}
+
 class EmptyVal: public RuntimeVal{
   public:
     EmptyVal(): RuntimeVal(ValueType::Empty) { }

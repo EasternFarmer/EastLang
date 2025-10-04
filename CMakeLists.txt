@@ -9,11 +9,17 @@ add_executable(
   main.cpp
   util.cpp
   Errors.cpp
+  # parsing
   parsing/lexer.cpp
   parsing/parser.cpp
+  # interpretation
+  interpretation/interpreter.cpp
+  ## Env
   interpretation/Environment.cpp
   interpretation/GlobalEnv.cpp
-  interpretation/interpreter.cpp
+  ## built-in modules
+  interpretation/modules/main.cpp
+  interpretation/modules/array/arrayModule.cpp
 )
 
 set(CPACK_PACKAGE_NAME "EastLang")
