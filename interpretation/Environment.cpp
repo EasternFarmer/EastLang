@@ -21,6 +21,14 @@ RuntimeVal* Environment::declareVar(std::string varname, RuntimeVal* value, bool
   return value;
 };
 
+RuntimeVal* Environment::overrideVar(std::string varname, RuntimeVal* value) {
+  Environment* env = resolve(varname);
+
+  env->values[varname] = value;
+
+  return value;
+};
+
 RuntimeVal* Environment::assignVar(std::string varname, RuntimeVal* value) {
   Environment* env = resolve(varname);
 

@@ -83,6 +83,18 @@ void print_token_type(TokenType tk) {
     case TokenType::While:
       std::cout << "While Token\n";
       break;
+    case TokenType::BitwiseShift:
+      std::cout << "BitwiseShift Token\n";
+      break;
+    case TokenType::LogicalExpr:
+      std::cout << "LogicalExpr Token\n";
+      break;
+    case TokenType::ElseIf:
+      std::cout << "ElseIf Token\n";
+      break;
+    case TokenType::Monkey:
+      std::cout << "Monkey Token\n";
+      break;
   }
 }
 
@@ -132,6 +144,10 @@ void print_node_type(NodeType node) {
     case NodeType::MemberExpr:
       std::cout << "MemberExpr node\n";
       break;
+    case NodeType::SubscriptExpr: {
+      std::cout << "SubscriptExpr node\n";
+      break;  
+    }
     default:
       std::cout << "Unsupported node\n";
     }

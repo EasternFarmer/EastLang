@@ -250,6 +250,8 @@ Expr* Parser::parse_call_member_expr() {
       case TokenType::Dot:
         left = parse_member_expr(left);
         break;
+      default:
+        raise_error("wut2");
     }
   }
   return left;

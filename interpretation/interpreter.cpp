@@ -419,12 +419,39 @@ RuntimeVal* eval_program(Program* program, Environment* env) {
 
 RuntimeVal* eval_assignment(AssignmentExpr* assign, Environment* env) {
   Expr* name = assign->identifier;
-  if (name->kind != NodeType::Identifier) {
-    raise_error("Left hand side of assignment expected to be a identifier");
-  }
+  if (name->kind == NodeType::Identifier) {
+    RuntimeVal* val = evaluate(assign->value, env);
+    return env->assignVar(static_cast<Identifier*>(name)->value, val);
+  } else if (name->kind == NodeType::SubscriptExpr) {
+    SubscriptExpr* subs = static_cast<SubscriptExpr*>(name);
 
-  RuntimeVal* val = evaluate(assign->value, env);
-  return env->assignVar(static_cast<Identifier*>(name)->value, val);
+    RuntimeVal* left = evaluate(subs->left, env);
+    if (left->type != ValueType::Array)
+      raise_error("cannot subscript assing a non-array");
+    
+    RuntimeVal* num = evaluate(subs->value, env);
+    if (num->type != ValueType::Number)
+      raise_error("cannot subscript using a non-number");
+
+    auto value = evaluate(assign->value, env);
+
+    ArrayVal* leftArray = static_cast<ArrayVal*>(left);
+    int index = (int)(static_cast<NumberVal*>(num)->value);
+    
+    if (leftArray->elements.size() < index)
+      raise_error("array index out of range");
+
+    leftArray->elements[index] = value;
+    if (subs->left->kind == NodeType::Identifier) {
+      env->overrideVar(static_cast<Identifier*>(subs->left)->value, leftArray);
+      return value;
+    }
+
+    raise_error("wut1");
+  }
+  raise_error("Left hand side of assignment expected to be a identifier");
+
+  
 }
 
 NumberVal* eval_binary_math(NumberVal* a, NumberVal* b, OperatorType op) {

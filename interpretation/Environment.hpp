@@ -12,6 +12,7 @@ class Environment {
   public:
     Environment(Environment* pe = nullptr);
     RuntimeVal* declareVar(std::string varname, RuntimeVal* value, bool constant = false);
+    RuntimeVal* overrideVar(std::string varname, RuntimeVal* value);
     RuntimeVal* assignVar(std::string varname, RuntimeVal* value);
     RuntimeVal* lookupVar(std::string varname);
     Environment* resolve(std::string varname);
