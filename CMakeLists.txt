@@ -6,20 +6,20 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_executable(
   EastLangInterpreter
-  main.cpp
-  util.cpp
-  Errors.cpp
+  src/main.cpp
+  src/util.cpp
+  src/Errors.cpp
   # parsing
-  parsing/lexer.cpp
-  parsing/parser.cpp
+  src/parsing/lexer.cpp
+  src/parsing/parser.cpp
   # interpretation
-  interpretation/interpreter.cpp
+  src/interpretation/interpreter.cpp
   ## Env
-  interpretation/Environment.cpp
-  interpretation/GlobalEnv.cpp
+  src/interpretation/Environment.cpp
+  src/interpretation/GlobalEnv.cpp
   ## built-in modules
-  interpretation/modules/main.cpp
-  interpretation/modules/array/arrayModule.cpp
+  src/interpretation/modules/main.cpp
+  src/interpretation/modules/array/arrayModule.cpp
 )
 
 set(CPACK_PACKAGE_NAME "EastLang")

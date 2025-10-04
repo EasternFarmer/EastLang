@@ -15,9 +15,7 @@ TODOs:
   - OOP (far future)
   - Pattern matching (maybe a new type)
   - Maybe objects
-  - Imports
   - Maybe FFI
-  - Special functions (if i see them necessary), for example `@import("relative_file_path")`
   - some sort of way to interact with RuntimeVal's (maybe methods `"".join(list)` or modules for it `string.join("", list)`)
 */
 
