@@ -161,7 +161,7 @@ Expr* Parser::parse_assignment_expr() {
 
   if (curr().type == TokenType::Equals) {
     advance(); // eat the curr equal sign
-    Expr* right = parse_expr(); 
+    Expr* right = parse_expr();
 
     AssignmentExpr* assign = new AssignmentExpr();
     assign->identifier = left;
@@ -189,7 +189,7 @@ Expr* Parser::parse_logical_expr() {
     advance();
     logicExpr->left = left;
     logicExpr->right = parse_comparison_expr();
-    
+
 
     left = logicExpr;
   }

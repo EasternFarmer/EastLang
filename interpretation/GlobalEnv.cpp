@@ -16,7 +16,7 @@
     }
 #else
     #include <unistd.h>
-    
+
     void sleep_(unsigned milliseconds)
     {
         usleep(milliseconds * 1000); // takes microseconds
@@ -169,7 +169,7 @@ NATIVE_FN(ord) {
 
   if (str->value.length() != 1)
     raise_error("ord can only be used with a one lenght string");
-  
+
   return MK_NUM(str->value.at(0));
 }
 
@@ -188,7 +188,7 @@ NATIVE_FN(chr) {
 NATIVE_FN(dir) {
   if (args.size() != 1)
     raise_error("Expected only one argument");
-  
+
   if (args[0]->type != ValueType::Module)
     raise_error("currently only Modules have members");
 
@@ -206,11 +206,11 @@ Environment* makeGlobalEnv() {
 
   env->declareVar("true", MK_BOOL(true), true);
   env->declareVar("false", MK_BOOL(false), true);
-  
+
   env->declareVar("empty", new EmptyVal(), true);
   env->declareVar("break", new BreakVal(), true);
   env->declareVar("continue", new ContinueVal(), true);
-  
+
   env->declareVar("pi", MK_NUM(CONST_PI), true);
   env->declareVar("e", MK_NUM(CONST_E), true);
 

@@ -6,43 +6,43 @@
 std::deque<Token> tokenize(std::string sourceCode) {
   std::deque<Token> tokens;
   std::deque<char> str(sourceCode.begin(), sourceCode.end());
-  
+
   while (str.size() > 0) {
     if (str[0] == '(') {
       char value = str.front();
       str.pop_front();
       tokens.push_back(Token(value, TokenType::OpenParen));
-      
+
     } else if (str[0] == ')') {
       char value = str.front();
       str.pop_front();
       tokens.push_back(Token(value, TokenType::ClosedParen));
-      
+
     } else if (str[0] == '{') {
       char value = str.front();
       str.pop_front();
       tokens.push_back(Token(value, TokenType::OpenBrace));
-      
+
     } else if (str[0] == '}') {
       char value = str.front();
       str.pop_front();
       tokens.push_back(Token(value, TokenType::ClosedBrace));
-      
+
     } else if (str[0] == '[') {
       char value = str.front();
       str.pop_front();
       tokens.push_back(Token(value, TokenType::OpenBracket));
-      
+
     } else if (str[0] == ']') {
       char value = str.front();
       str.pop_front();
       tokens.push_back(Token(value, TokenType::ClosedBracket));
-      
+
     } else if (str[0] == '.') {
       char value = str.front();
       str.pop_front();
       tokens.push_back(Token(value, TokenType::Dot));
-      
+
     } else if (str[0] == ',') {
       char value = str.front();
       str.pop_front();
@@ -52,7 +52,7 @@ std::deque<Token> tokenize(std::string sourceCode) {
       char value = str.front();
       str.pop_front();
       tokens.push_back(Token(value, TokenType::BinaryOperator));
-      
+
     } else if (str[0] == '!') {
       str.pop_front();
       if (str[0] == '=') {
@@ -69,7 +69,7 @@ std::deque<Token> tokenize(std::string sourceCode) {
       } else {
         tokens.push_back(Token('=', TokenType::Equals));
       }
-      
+
     } else if (str[0] == '@') {
       str.pop_front();
       tokens.push_back(Token('@', TokenType::Monkey));
@@ -85,7 +85,7 @@ std::deque<Token> tokenize(std::string sourceCode) {
       } else {
         tokens.push_back(Token('>', TokenType::ComparisonExpr));
       }
-      
+
     } else if (str[0] == '<') {
       str.pop_front();
       if (str[0] == '=') {
@@ -97,7 +97,7 @@ std::deque<Token> tokenize(std::string sourceCode) {
       } else {
         tokens.push_back(Token('<', TokenType::ComparisonExpr));
       }
-    
+
     } else if (str[0] == '`') { // block comments
       str.pop_front();
       while (str[0] != '`') {
@@ -171,7 +171,7 @@ std::deque<Token> tokenize(std::string sourceCode) {
 
               esc += str.front();
               str.pop_front();
-              
+
               esc += str.front();
               str.pop_front();
 

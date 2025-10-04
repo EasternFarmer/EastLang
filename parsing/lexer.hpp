@@ -16,7 +16,7 @@ enum class TokenType {
   BinaryOperator,
   BitwiseShift,
   Equals,
-  
+
   If,
   Else,
   ElseIf,
@@ -61,7 +61,7 @@ class Token {
   public:
     std::string value;
     TokenType type;
-    
+
     Token(std::string v, TokenType t) {
       value = v;
       type = t;

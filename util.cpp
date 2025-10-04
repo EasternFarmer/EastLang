@@ -16,7 +16,7 @@ std::string read_file(const char * path) {
     std::cerr << "Could not open file " << path << "\n";
     std::exit(1);
   }
-  
+
   std::ostringstream buffer;
   buffer << file.rdbuf();
 
@@ -152,7 +152,7 @@ void print_node_type(NodeType node) {
       break;
     case NodeType::SubscriptExpr: {
       std::cout << "SubscriptExpr node\n";
-      break;  
+      break;
     }
     default:
       std::cout << "Unsupported node\n";

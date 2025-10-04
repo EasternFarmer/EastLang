@@ -17,7 +17,7 @@ class Parser {
 
   public:
     Program* parse_ast(std::string& sourceCode);
-  
+
   private:
     Expr* parse_expr();
     Expr* parse_assignment_expr();

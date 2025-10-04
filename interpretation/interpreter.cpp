@@ -162,7 +162,7 @@ RuntimeVal* eval_member_expr(MemberExpr* memberExpr, Environment* env) {
   if (left->type == ValueType::Module) {
     ModuleVal* moduleVal = static_cast<ModuleVal*>(left);
     return moduleVal->moduleEnv->lookupVar(memberExpr->identifier);
-    
+
   } else {
     raise_error("Unsuported type for member (dot) Expr");
   }
@@ -187,7 +187,7 @@ RuntimeVal* eval_special_expr(SpecialExpr* specialExpr, Environment* env) {
     if (moduleName.at(0) == '<') {
       return MK_MODULE(importBuiltInModule(strToModuleName(moduleName)));
     }
-    
+
     ModuleVal* moduleVal = new ModuleVal();
     moduleVal->moduleEnv = makeGlobalEnv();
 
@@ -440,7 +440,7 @@ RuntimeVal* eval_assignment(AssignmentExpr* assign, Environment* env) {
     RuntimeVal* left = evaluate(subs->left, env);
     if (left->type != ValueType::Array)
       raise_error("cannot subscript assing a non-array");
-    
+
     RuntimeVal* num = evaluate(subs->value, env);
     if (num->type != ValueType::Number)
       raise_error("cannot subscript using a non-number");
@@ -449,7 +449,7 @@ RuntimeVal* eval_assignment(AssignmentExpr* assign, Environment* env) {
 
     ArrayVal* leftArray = static_cast<ArrayVal*>(left);
     int index = (int)(static_cast<NumberVal*>(num)->value);
-    
+
     if (leftArray->elements.size() < index)
       raise_error("array index out of range");
 
@@ -463,7 +463,7 @@ RuntimeVal* eval_assignment(AssignmentExpr* assign, Environment* env) {
   }
   raise_error("Left hand side of assignment expected to be a identifier");
 
-  
+
 }
 
 NumberVal* eval_binary_math(NumberVal* a, NumberVal* b, OperatorType op) {

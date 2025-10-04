@@ -64,8 +64,8 @@ Environment* Environment::resolve(std::string varname) {
     if (parentEnv != nullptr) {
       return parentEnv->resolve(varname); // look in the parent env
     } else {
-      return nullptr; // return nullptr if no above scope is found 
+      return nullptr; // return nullptr if no above scope is found
     }
   }
-  return this; // we found the variable in this scope so we return 
+  return this; // we found the variable in this scope so we return
 };

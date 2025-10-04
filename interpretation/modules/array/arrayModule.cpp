@@ -20,7 +20,7 @@ NATIVE_FN(append) {
     raise_error("Expected the first argument to be of type Array in array.append");
 
   ArrayVal* array = static_cast<ArrayVal*>(args[0]);
-  
+
   for (int i = 1; i < args.size(); i++) {
     array->elements.push_back(args[i]);
   }
