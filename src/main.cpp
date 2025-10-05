@@ -13,6 +13,7 @@ int run(int argc, char * argv[]) {
 
   Parser* parser = new Parser();
   Environment* env = makeGlobalEnv();
+  env->declareVar("@name", MK_STRING("main"));
 
   auto* argArray = new ArrayVal();
   for (int i = 1; i < argc; i++) { // convert argv after the interpreter path into an array

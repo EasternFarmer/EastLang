@@ -359,8 +359,8 @@ Expr* Parser::parse_special_expr() {
   SpecialExpr* specialExpr = new SpecialExpr();
   specialExpr->identifier = iden->value;
 
-  if (curr().type != TokenType::OpenParen) { // if i want to add special value or sum
-    raise_error("Expected a opening paren after special function identifier " + iden->value);
+  if (curr().type != TokenType::OpenParen) {
+    return specialExpr;
   }
   advance();
 
