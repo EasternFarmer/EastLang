@@ -30,16 +30,16 @@ Sleep for `time` amount of seconds
   - **type:** number
 - **returns:** empty
 
-### input( * )
+### input( \* )
 Get user input (1 line)
-- *
+- \*
   - **description:** any amount of arguments you want to print before asking for input
   - **type:** any; optional
 - **returns:** empty
 
 ### dir(module)
 List every method in a module
-- *
+- module
   - **description:** a module you want to check
   - **type:** module
 - **returns:** array; array of every method found in the module
