@@ -181,7 +181,7 @@ ModuleName strToModuleName(std::string name) {
 RuntimeVal* eval_special_expr(SpecialExpr* specialExpr, Environment* env) {
   if (specialExpr->identifier == "import") {
     if (!specialExpr->isFunction) {
-      raise_error("Special expression 'import' needs to be a function with one argument");
+      raise_error("Special expression 'import' needs to be a function with one argument"); // TODO: make argv for imports
     }
     if (specialExpr->args.size() != 1) {
       raise_error("cant import more than 1 module in a single expresion");
@@ -197,7 +197,11 @@ RuntimeVal* eval_special_expr(SpecialExpr* specialExpr, Environment* env) {
     moduleVal->moduleEnv = makeGlobalEnv();
     moduleVal->moduleEnv->declareVar("@name", MK_STRING("module"));
 
-    std::string sourceCode = read_file((pwd() + "/" + moduleName).c_str());
+    std::string newModulePath = static_cast<StringVal*>(env->lookupVar("@path"))->value + "/" + moduleName;
+
+    moduleVal->moduleEnv->declareVar("@path", MK_STRING(path_of_file(newModulePath)), true);
+
+    std::string sourceCode = read_file((newModulePath).c_str());
 
     evaluate(Parser().parse_ast(sourceCode), moduleVal->moduleEnv);
 

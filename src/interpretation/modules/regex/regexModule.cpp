@@ -68,7 +68,7 @@ NATIVE_FN(replace) {
 
   std::string ret = regex_replace(static_cast<StringVal*>(args[1])->value, regexPattern->pattern, static_cast<StringVal*>(args[2])->value);
   return MK_STRING(ret);
-} // regex.replace(pattern, string, replace_string)
+}
 
 Environment* makeRegexModule() {
   Environment* _module = new Environment();

@@ -15,6 +15,8 @@ int run(int argc, char * argv[]) {
   Environment* env = makeGlobalEnv();
   env->declareVar("@name", MK_STRING("main"));
 
+  env->declareVar("@path", MK_STRING(path_of_file(pwd() + "/" + argv[1])), true);
+
   auto* argArray = new ArrayVal();
   for (int i = 1; i < argc; i++) { // convert argv after the interpreter path into an array
       argArray->elements.push_back(MK_STRING(argv[i]));

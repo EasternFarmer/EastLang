@@ -10,6 +10,13 @@ std::string pwd() {
   return cwd.string();
 }
 
+std::string path_of_file(const std::string& fname) {
+     std::size_t pos = fname.find_last_of("\\/");
+     return (std::string::npos == pos)
+         ? ""
+         : fname.substr(0, pos);
+}
+
 std::string read_file(const char * path) {
   std::ifstream file(path);
   if (!file) {

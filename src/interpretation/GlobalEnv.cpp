@@ -160,7 +160,7 @@ NATIVE_FN(input) {
   if (args.size() > 0) {
     for (auto arg : args) {
       print_runtime_val(arg);
-      std::cout << "";
+      std::cout << " ";
     }
   }
   std::string out;

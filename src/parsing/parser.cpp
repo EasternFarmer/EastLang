@@ -17,6 +17,7 @@ TODOs:
   - Maybe objects
   - Maybe FFI
   - some sort of way to interact with RuntimeVal's (maybe methods `"".join(list)` or modules for it `string.join("", list)`)
+  - argv for imports @import("file", arg1, arg2)
 */
 
 #include "lexer.hpp"
