@@ -20,6 +20,7 @@ add_executable(
   ## built-in modules
   src/interpretation/modules/main.cpp
   src/interpretation/modules/array/arrayModule.cpp
+  src/interpretation/modules/regex/regexModule.cpp
 )
 
 set(CPACK_PACKAGE_NAME "EastLang")

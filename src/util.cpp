@@ -101,6 +101,9 @@ void print_token_type(TokenType tk) {
     case TokenType::ComparisonExpr:
       std::cout << "ComparisonExpr Token\n";
       break;
+    case TokenType::Local:
+      std::cout << "Local Token\n";
+      break;
   }
 }
 

@@ -171,6 +171,8 @@ RuntimeVal* eval_member_expr(MemberExpr* memberExpr, Environment* env) {
 ModuleName strToModuleName(std::string name) {
   if (name == "<array>") {
     return ModuleName::Array;
+  } else if (name == "<regex>") {
+    return ModuleName::Regex;
   } else {
     raise_error("Invalid built-in module name: "+ name);
   }

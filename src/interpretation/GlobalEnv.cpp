@@ -76,6 +76,10 @@ void print_runtime_val(RuntimeVal* var) {
       std::cout << "module";
       break;
     }
+    case ValueType::RegexPattern: {
+      std::cout << "Regex pattern(" << static_cast<RegexPattern*>(var)->original_regex << ")";
+      break;
+    }
     default:
       raise_error("invalid runtime type");
   }
@@ -121,6 +125,9 @@ NATIVE_FN(type) {
     }
     case ValueType::Module: {
       return MK_STRING("module");
+    }
+    case ValueType::RegexPattern: {
+      return MK_STRING("regex_pattern");
     }
     default:
       raise_error("invalid runtime type");

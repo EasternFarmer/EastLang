@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <functional>
+#include <regex>
 #include "../parsing/ast.hpp"
 
 class Environment;
@@ -16,6 +17,7 @@ enum class ValueType {
   Boolean,
   NativeFn,
   Function,
+  RegexPattern,
 };
 
 class RuntimeVal {
@@ -36,6 +38,7 @@ class ModuleVal: public RuntimeVal{
 
 enum class ModuleName {
   Array,
+  Regex,
 };
 
 inline ModuleVal* MK_MODULE(Environment* env) {
@@ -113,6 +116,22 @@ inline BooleanVal* MK_BOOL(bool n) {
   newBool->value = n;
 
   return newBool;
+}
+
+class RegexPattern: public RuntimeVal{
+  public:
+    RegexPattern(): RuntimeVal(ValueType::RegexPattern) { }
+    std::regex pattern;
+    std::string original_regex;
+};
+
+inline RegexPattern* MK_REGEX(std::string str) {
+  RegexPattern* newRegex = new RegexPattern();
+
+  newRegex->pattern = std::regex(str);
+  newRegex->original_regex = str;
+
+  return newRegex;
 }
 
 class NativeFnVal: public RuntimeVal{
