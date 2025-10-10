@@ -180,14 +180,14 @@ ModuleName strToModuleName(std::string name) {
 
 RuntimeVal* eval_special_expr(SpecialExpr* specialExpr, Environment* env) {
   if (specialExpr->identifier == "import") {
-    if (!specialExpr->isFunction) {
-      raise_error("Special expression 'import' needs to be a function with one argument"); // TODO: make argv for imports
-    }
-    if (specialExpr->args.size() != 1) {
-      raise_error("cant import more than 1 module in a single expresion");
-    }
+    if (!specialExpr->isFunction) { raise_error("Special expression 'import' needs to be a function"); }
 
-    std::string moduleName = static_cast<StringLiteral*>(specialExpr->args[0])->value;
+    if (specialExpr->args.size() == 0) { raise_error("Expected at least one argument to @import"); }
+
+    RuntimeVal* evaledModuleName = evaluate(specialExpr->args[0], env);
+    if (evaledModuleName->type != ValueType::String) { raise_error("Expected the first argument to evaluate to string"); }
+
+    std::string moduleName = static_cast<StringVal*>(evaledModuleName)->value;
 
     if (moduleName.at(0) == '<') {
       return MK_MODULE(importBuiltInModule(strToModuleName(moduleName)));
@@ -195,20 +195,51 @@ RuntimeVal* eval_special_expr(SpecialExpr* specialExpr, Environment* env) {
 
     ModuleVal* moduleVal = new ModuleVal();
     moduleVal->moduleEnv = makeGlobalEnv();
+
+    std::vector<RuntimeVal*> argv;
+    for (int argc = 1; argc < specialExpr->args.size(); argc++) {
+      argv.push_back(evaluate(specialExpr->args[argc], env));
+    }
+
+    moduleVal->moduleEnv->declareVar("argv", MK_ARRAY(argv), true);
     moduleVal->moduleEnv->declareVar("@name", MK_STRING("module"));
 
     std::string newModulePath = static_cast<StringVal*>(env->lookupVar("@path"))->value + "/" + moduleName;
-
     moduleVal->moduleEnv->declareVar("@path", MK_STRING(path_of_file(newModulePath)), true);
-
     std::string sourceCode = read_file((newModulePath).c_str());
 
     evaluate(Parser().parse_ast(sourceCode), moduleVal->moduleEnv);
 
     return moduleVal;
 
+  } else if (specialExpr->identifier == "include") {
+    if (!specialExpr->isFunction) { raise_error("Special expression 'import' needs to be a function"); }
+
+    if (specialExpr->args.size() == 0) { raise_error("Expected at least one argument to @import"); }
+
+    RuntimeVal* evaledModuleName = evaluate(specialExpr->args[0], env);
+    if (evaledModuleName->type != ValueType::String) { raise_error("Expected the first argument to evaluate to string"); }
+
+    std::string moduleName = static_cast<StringVal*>(evaledModuleName)->value;
+
+    if (moduleName.at(0) == '<') {
+      return MK_MODULE(importBuiltInModule(strToModuleName(moduleName)));
+    }
+
+    ModuleVal* moduleVal = new ModuleVal();
+    moduleVal->moduleEnv = new Environment(env);
+    
+    moduleVal->moduleEnv->declareVar("@name", MK_STRING("inserted"));
+
+    std::string sourceCode = read_file((static_cast<StringVal*>(env->lookupVar("@path"))->value + "/" + moduleName).c_str());
+
+    evaluate(Parser().parse_ast(sourceCode), moduleVal->moduleEnv);
+
+    return moduleVal;
   } else if (specialExpr->identifier == "name") {
     return env->lookupVar("@name");
+  } else if (specialExpr->identifier == "path") {
+    return env->lookupVar("@path");
   } else {
     raise_error("Invalid special Expr identifier");
   }

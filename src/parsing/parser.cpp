@@ -368,10 +368,8 @@ Expr* Parser::parse_special_expr() {
   specialExpr->isFunction = true;
 
   while (not_eof() && curr().type != TokenType::ClosedParen) {
-    if (curr().type != TokenType::String)
-      raise_error("param to the special function should be a string");
-
-    specialExpr->args.push_back(static_cast<StringLiteral*>(parse_primary_expr()));
+    specialExpr->args.push_back(parse_expr());
+    if (curr().type == TokenType::Comma) advance();
   }
 
   expect(TokenType::ClosedParen, "Missing closing paren for special function " + iden->value);

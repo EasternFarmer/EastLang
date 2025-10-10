@@ -29,9 +29,12 @@ int run(int argc, char * argv[]) {
   return 0;
 }
 
-int repl() {
+int repl(int argc, char * argv[]) {
   Parser* parser = new Parser();
   Environment* env = makeGlobalEnv();
+
+  env->declareVar("@name", MK_STRING("main"));
+  env->declareVar("@path", MK_STRING(pwd()), true);
 
   std::cout << "Repl v99.99\n";
 
@@ -62,7 +65,7 @@ int repl() {
 int main(int argc, char * argv[]) {
 
   if (argc < 2) {
-    return repl();
+    return repl(argc, argv);
   } else {
     return run(argc, argv);
   }
