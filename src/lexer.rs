@@ -1,48 +1,7 @@
 use std::collections::VecDeque;
 
 use crate::errors::Errors;
-
-#[derive(Debug)]
-pub(crate) enum TokenType {
-    // types
-    String(String),
-    Int(i32),
-    Float(f32),
-    // List,
-    Identifier(String),
-    Callable,
-    Const,
-    Local,
-    BinaryOperator(String),
-    BitwiseShift(String),
-    Equals,
-
-    If,
-    Else,
-    ElseIf,
-    While,
-
-    LogicalExpr(String),
-    Not,
-    ComparisonExpr(String),
-
-    OpenParen,
-    ClosedParen,
-
-    OpenBrace,   // {
-    ClosedBrace, // }
-
-    OpenBracket,   // [
-    ClosedBracket, // ]
-
-    Comma,
-    Dot,
-    Colon,
-    SemiColon,
-    Monkey, // @
-
-    EndOfFile,
-}
+use crate::lexer_types::*;
 
 fn get_keyword(keyword: String) -> Option<TokenType> {
     if keyword == "local" {
@@ -60,11 +19,11 @@ fn get_keyword(keyword: String) -> Option<TokenType> {
     } else if keyword == "not" {
         return Some(TokenType::Not)
     } else if keyword == "and" {
-        return Some(TokenType::LogicalExpr("and".to_owned()))
+        return Some(TokenType::LogicalExpr(LogicalExpr::And))
     } else if keyword == "or" {
-        return Some(TokenType::LogicalExpr("or".to_owned()))
+        return Some(TokenType::LogicalExpr(LogicalExpr::Or))
     } else if keyword == "xor" {
-        return Some(TokenType::LogicalExpr("xor".to_owned()))
+        return Some(TokenType::LogicalExpr(LogicalExpr::Xor))
     } else if keyword == "while" {
         return Some(TokenType::While)
     }
@@ -114,7 +73,7 @@ pub(crate) fn tokenize(source_code: &str) -> Result<VecDeque<TokenType>, (Errors
         } else if chars[0] == '!' {
             chars.pop_front();
             if chars[0] == '=' {
-                deque.push_back(TokenType::ComparisonExpr("!=".to_owned()));
+                deque.push_back(TokenType::ComparisonExpr(ComparisonExpr::NotEquals));
                 chars.pop_front();
             } else {
                 deque.push_back(TokenType::Not);
@@ -131,13 +90,13 @@ pub(crate) fn tokenize(source_code: &str) -> Result<VecDeque<TokenType>, (Errors
             || chars[0] == '/'
             || chars[0] == '%'
         {
-            deque.push_back(TokenType::BinaryOperator(chars[0].to_string()));
+            deque.push_back(TokenType::BinaryOperator(chars[0]));
             chars.pop_front();
         } else if chars[0] == '=' {
             chars.pop_front();
             if chars[0] == '=' {
                 chars.pop_front();
-                deque.push_back(TokenType::ComparisonExpr("==".to_owned()));
+                deque.push_back(TokenType::ComparisonExpr(ComparisonExpr::Equals));
             } else {
                 deque.push_back(TokenType::Equals);
             }
@@ -145,23 +104,23 @@ pub(crate) fn tokenize(source_code: &str) -> Result<VecDeque<TokenType>, (Errors
             chars.pop_front();
             if chars[0] == '=' {
                 chars.pop_front();
-                deque.push_back(TokenType::ComparisonExpr(">=".to_owned()));
+                deque.push_back(TokenType::ComparisonExpr(ComparisonExpr::GreaterEqual));
             } else if chars[0] == '>' {
                 chars.pop_front();
-                deque.push_back(TokenType::BitwiseShift(">>".to_owned()));
+                deque.push_back(TokenType::BitwiseShift('r'));
             } else {
-                deque.push_back(TokenType::ComparisonExpr(">".to_owned()));
+                deque.push_back(TokenType::ComparisonExpr(ComparisonExpr::Greater));
             }
         } else if chars[0] == '<' {
             chars.pop_front();
             if chars[0] == '=' {
                 chars.pop_front();
-                deque.push_back(TokenType::ComparisonExpr("<=".to_owned()));
+                deque.push_back(TokenType::ComparisonExpr(ComparisonExpr::LessEqual));
             } else if chars[0] == '<' {
                 chars.pop_front();
-                deque.push_back(TokenType::BitwiseShift("<<".to_owned()));
+                deque.push_back(TokenType::BitwiseShift('l'));
             } else {
-                deque.push_back(TokenType::ComparisonExpr("<".to_owned()));
+                deque.push_back(TokenType::ComparisonExpr(ComparisonExpr::Less));
             }
         } else if chars[0].is_digit(10) {
             // TODO: Add non-base10 notations ( 0b101101 )
@@ -245,7 +204,7 @@ pub(crate) fn tokenize(source_code: &str) -> Result<VecDeque<TokenType>, (Errors
             if let Some(token_type) = get_keyword(word) {
                 deque.push_back(token_type);
             } else {
-                deque.push_back(TokenType::Identifier(value.into_iter().collect::<String>()));
+                deque.push_back(TokenType::Identifier(value.into_iter().collect::<String>().into_boxed_str()));
             }
         } else if chars[0] == '"' || chars[0] == '\'' {
             let opening_quote: char = chars[0];
@@ -332,7 +291,7 @@ pub(crate) fn tokenize(source_code: &str) -> Result<VecDeque<TokenType>, (Errors
             }
             chars.pop_front(); // remove the second quote
 
-            deque.push_back(TokenType::String(value.into_iter().collect::<String>()));
+            deque.push_back(TokenType::String(value.into_iter().collect::<String>().into_boxed_str()));
         } else if chars[0].is_whitespace() {
             chars.pop_front();
         } else {

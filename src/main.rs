@@ -2,9 +2,10 @@ use std::io;
 use std::io::Write;
 
 mod errors;
+mod lexer_types;
 mod lexer;
 
-use lexer::TokenType;
+use lexer_types::TokenType;
 
 fn log_token(token: &TokenType) {
     match token {
@@ -22,9 +23,9 @@ fn log_token(token: &TokenType) {
         TokenType::Else => print!("Else() "),
         TokenType::ElseIf => print!("ElseIf() "),
         TokenType::While => print!("While() "),
-        TokenType::LogicalExpr(value) => print!("LogicalExpr({}) ", value),
+        TokenType::LogicalExpr(value) => print!("LogicalExpr({:?}) ", value),
         TokenType::Not => print!("Not() "),
-        TokenType::ComparisonExpr(value) => print!("ComparisonExpr({}) ", value),
+        TokenType::ComparisonExpr(value) => print!("ComparisonExpr({:?}) ", value),
         TokenType::OpenParen => print!("OpenParen() "),
         TokenType::ClosedParen => print!("ClosedParen() "),
         TokenType::OpenBrace => print!("OpenBrace() "),
