@@ -6,8 +6,8 @@ use crate::errors::Errors;
 pub(crate) enum TokenType {
     // types
     String(String),
-    Int(String),
-    Float(String),
+    Int(i32),
+    Float(f32),
     // List,
     Identifier(String),
     Callable,
@@ -179,8 +179,8 @@ pub(crate) fn tokenize(source_code: &str) -> Result<VecDeque<TokenType>, (Errors
                         return Err((Errors::SyntaxError, "Missing value after 0b".to_owned()));
                     }
                     let binary_string: String = value.into_iter().collect();
-                    let decimal_number = u32::from_str_radix(&binary_string, 2).unwrap();
-                    deque.push_back(TokenType::Int(format!("{}", decimal_number)));
+                    let decimal_number = i32::from_str_radix(&binary_string, 2).unwrap();
+                    deque.push_back(TokenType::Int(decimal_number));
                     continue;
                 } else if chars[1] == 'x' {
                     chars.pop_front();
@@ -194,8 +194,8 @@ pub(crate) fn tokenize(source_code: &str) -> Result<VecDeque<TokenType>, (Errors
                         return Err((Errors::SyntaxError, "Missing value after 0x".to_owned()));
                     }
                     let hex_string: String = value.into_iter().collect();
-                    let decimal_number = u32::from_str_radix(&hex_string, 16).unwrap();
-                    deque.push_back(TokenType::Int(format!("{}", decimal_number)));
+                    let decimal_number = i32::from_str_radix(&hex_string, 16).unwrap();
+                    deque.push_back(TokenType::Int(decimal_number));
                     continue;
                 } else if chars[1] == 'o' {
                     chars.pop_front();
@@ -209,8 +209,8 @@ pub(crate) fn tokenize(source_code: &str) -> Result<VecDeque<TokenType>, (Errors
                         return Err((Errors::SyntaxError, "Missing value after 0x".to_owned()));
                     }
                     let octal_string: String = value.into_iter().collect();
-                    let decimal_number = u32::from_str_radix(&octal_string, 8).unwrap();
-                    deque.push_back(TokenType::Int(format!("{}", decimal_number)));
+                    let decimal_number = i32::from_str_radix(&octal_string, 8).unwrap();
+                    deque.push_back(TokenType::Int(decimal_number));
                     continue;
                 }
             }
@@ -227,10 +227,11 @@ pub(crate) fn tokenize(source_code: &str) -> Result<VecDeque<TokenType>, (Errors
                 value.push(chars[0]);
                 chars.pop_front();
             }
+            let string_num = value.into_iter().collect::<String>();
             if is_float {
-                deque.push_back(TokenType::Float(value.into_iter().collect::<String>()));
+                deque.push_back(TokenType::Float(string_num.parse::<f32>().unwrap()));
             } else {
-                deque.push_back(TokenType::Int(value.into_iter().collect::<String>()));
+                deque.push_back(TokenType::Int(string_num.parse::<i32>().unwrap()));
             }
         } else if chars[0].is_alphanumeric() || chars[0] == '_' {
             let mut value: Vec<char> = Vec::new();
