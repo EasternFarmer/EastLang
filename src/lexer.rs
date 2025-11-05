@@ -125,7 +125,7 @@ pub(crate) fn tokenize(source_code: &str) -> Result<VecDeque<TokenType>, (Errors
         } else if chars[0].is_digit(10) {
             // TODO: Add non-base10 notations ( 0b101101 )
             let mut value: Vec<char> = Vec::new();
-            if chars.len() > 2 && chars[0] == '0' {
+            if chars.len() >= 2 && chars[0] == '0' {
                 if chars[1] == 'b' {
                     chars.pop_front();
                     chars.pop_front();
@@ -165,7 +165,7 @@ pub(crate) fn tokenize(source_code: &str) -> Result<VecDeque<TokenType>, (Errors
                         chars.pop_front();
                     }
                     if !more_than_one {
-                        return Err((Errors::SyntaxError, "Missing value after 0x".to_owned()));
+                        return Err((Errors::SyntaxError, "Missing value after 0o".to_owned()));
                     }
                     let octal_string: String = value.into_iter().collect();
                     let decimal_number = i32::from_str_radix(&octal_string, 8).unwrap();
@@ -269,7 +269,7 @@ pub(crate) fn tokenize(source_code: &str) -> Result<VecDeque<TokenType>, (Errors
                             return Err((
                                 Errors::ValueError,
                                 format!(
-                                    "Invalid value after \\x, \"{}\" is not a valid utf-8 char",
+                                    "Invalid value after \\x, \"{}\" is not a valid utf-8 sequence",
                                     num
                                 ),
                             ));
@@ -303,4 +303,78 @@ pub(crate) fn tokenize(source_code: &str) -> Result<VecDeque<TokenType>, (Errors
     deque.push_back(TokenType::EndOfFile);
 
     Ok(deque)
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn basic_addition() {
+        let result = tokenize("12 + 13");
+        assert!(result.is_ok());
+        let tokens = result.unwrap();
+        
+        assert_eq!(tokens[0], TokenType::Int(12));
+        assert_eq!(tokens[1], TokenType::BinaryOperator('+'));
+        assert_eq!(tokens[2], TokenType::Int(13));
+    }
+
+    #[test]
+    fn missing_values_after_0b_0x_0o() {
+        let result1 = tokenize("0b");
+        assert!(result1.is_err());
+        let err1 = result1.err().unwrap();
+        assert_eq!(err1.0, Errors::SyntaxError);
+        assert_eq!(err1.1, "Missing value after 0b");
+        
+        let result2 = tokenize("0x");
+        assert!(result2.is_err());
+        let err1 = result2.err().unwrap();
+        assert_eq!(err1.0, Errors::SyntaxError);
+        assert_eq!(err1.1, "Missing value after 0x");
+        
+        let result3 = tokenize("0o");
+        assert!(result3.is_err());
+        let err1 = result3.err().unwrap();
+        assert_eq!(err1.0, Errors::SyntaxError);
+        assert_eq!(err1.1, "Missing value after 0o");
+    }
+
+    #[test]
+    fn multi_dot_number() {
+        let result = tokenize("0.0112.0");
+        assert!(result.is_err());
+        let err = result.err().unwrap();
+        assert_eq!(err.0, Errors::SyntaxError);
+        assert_eq!(err.1, "Multiple dots in a number");
+    }
+
+    #[test]
+    fn empty_x_escape() {
+        let result = tokenize("\"\\x\"");
+        assert!(result.is_err());
+        let err = result.err().unwrap();
+        assert_eq!(err.0, Errors::SyntaxError);
+        assert_eq!(err.1, "Invalid or Missing hex digits after \\x");
+    }
+    
+    #[test]
+    fn invalid_x_escape() {
+        let result = tokenize("\"\\xFF\"");
+        assert!(result.is_err());
+        let err = result.err().unwrap();
+        assert_eq!(err.0, Errors::ValueError);
+        assert_eq!(err.1, "Invalid value after \\x, \"FF\" is not a valid utf-8 sequence");
+    }
+
+    #[test]
+    fn unterminated_string() {
+        let result = tokenize("\"Hello World");
+        assert!(result.is_err());
+        let err = result.err().unwrap();
+        assert_eq!(err.0, Errors::SyntaxError);
+        assert_eq!(err.1, "Unterminated string literal \"Hello World\"");
+    }
 }

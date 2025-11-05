@@ -1,11 +1,11 @@
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub(crate) enum LogicalExpr {
   And,
   Or,
   Xor
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub(crate) enum ComparisonExpr {
   Equals,
   NotEquals,
@@ -15,7 +15,7 @@ pub(crate) enum ComparisonExpr {
   LessEqual
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub(crate) enum TokenType {
     // types
     String(Box<str>),
