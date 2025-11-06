@@ -1,11 +1,11 @@
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub(crate) enum LogicalExpr {
   And,
   Or,
   Xor
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub(crate) enum ComparisonExpr {
   Equals,
   NotEquals,
@@ -15,7 +15,22 @@ pub(crate) enum ComparisonExpr {
   LessEqual
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub(crate) enum BinaryOperator {
+  Add,
+  Substract,
+  Multiply,
+  Divide,
+  Modulo
+}
+
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub(crate) enum BitwiseShift {
+  Left,
+  Right
+}
+
+#[derive(Debug, PartialEq, Clone)]
 pub(crate) enum TokenType {
     // types
     String(Box<str>),
@@ -26,8 +41,8 @@ pub(crate) enum TokenType {
     Callable,
     Const,
     Local,
-    BinaryOperator(char), // + or - or * or / or %
-    BitwiseShift(char), // l or r
+    BinaryOperator(BinaryOperator),
+    BitwiseShift(BitwiseShift),
     Equals,
 
     If,
@@ -54,5 +69,5 @@ pub(crate) enum TokenType {
     SemiColon,
     Monkey, // @
 
-    EndOfFile,
+    EOF,
 }

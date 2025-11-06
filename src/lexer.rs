@@ -84,13 +84,20 @@ pub(crate) fn tokenize(source_code: &str) -> Result<VecDeque<TokenType>, (Errors
                 chars.pop_front();
             }
             chars.pop_front();
-        } else if chars[0] == '+'
-            || chars[0] == '-'
-            || chars[0] == '*'
-            || chars[0] == '/'
-            || chars[0] == '%'
-        {
-            deque.push_back(TokenType::BinaryOperator(chars[0]));
+        } else if chars[0] == '+' {
+            deque.push_back(TokenType::BinaryOperator(BinaryOperator::Add));
+            chars.pop_front();
+        } else if chars[0] == '-' {
+            deque.push_back(TokenType::BinaryOperator(BinaryOperator::Substract));
+            chars.pop_front();
+        } else if chars[0] == '*' {
+            deque.push_back(TokenType::BinaryOperator(BinaryOperator::Multiply));
+            chars.pop_front();
+        } else if chars[0] == '/' {
+            deque.push_back(TokenType::BinaryOperator(BinaryOperator::Divide));
+            chars.pop_front();
+        } else if chars[0] == '%' {
+            deque.push_back(TokenType::BinaryOperator(BinaryOperator::Modulo));
             chars.pop_front();
         } else if chars[0] == '=' {
             chars.pop_front();
@@ -107,7 +114,7 @@ pub(crate) fn tokenize(source_code: &str) -> Result<VecDeque<TokenType>, (Errors
                 deque.push_back(TokenType::ComparisonExpr(ComparisonExpr::GreaterEqual));
             } else if chars[0] == '>' {
                 chars.pop_front();
-                deque.push_back(TokenType::BitwiseShift('r'));
+                deque.push_back(TokenType::BitwiseShift(BitwiseShift::Right));
             } else {
                 deque.push_back(TokenType::ComparisonExpr(ComparisonExpr::Greater));
             }
@@ -118,7 +125,7 @@ pub(crate) fn tokenize(source_code: &str) -> Result<VecDeque<TokenType>, (Errors
                 deque.push_back(TokenType::ComparisonExpr(ComparisonExpr::LessEqual));
             } else if chars[0] == '<' {
                 chars.pop_front();
-                deque.push_back(TokenType::BitwiseShift('l'));
+                deque.push_back(TokenType::BitwiseShift(BitwiseShift::Left));
             } else {
                 deque.push_back(TokenType::ComparisonExpr(ComparisonExpr::Less));
             }
@@ -300,7 +307,7 @@ pub(crate) fn tokenize(source_code: &str) -> Result<VecDeque<TokenType>, (Errors
         }
     }
 
-    deque.push_back(TokenType::EndOfFile);
+    deque.push_back(TokenType::EOF);
 
     Ok(deque)
 }
@@ -317,7 +324,7 @@ mod tests {
         let tokens = result.unwrap();
         
         assert_eq!(tokens[0], TokenType::Int(12));
-        assert_eq!(tokens[1], TokenType::BinaryOperator('+'));
+        assert_eq!(tokens[1], TokenType::BinaryOperator(BinaryOperator::Add));
         assert_eq!(tokens[2], TokenType::Int(13));
     }
 
