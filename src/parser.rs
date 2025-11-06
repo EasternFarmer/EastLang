@@ -141,39 +141,43 @@ impl Parser {
     }
 
     fn parse_binary_shift(&mut self) -> Result<Ast, (Errors, String)> {
-        let left = Parser::parse_aditive_expr(self);
+        let mut left = Parser::parse_aditive_expr(self);
         if left.is_err() {
             return left;
         }
 
-        match self.tokens[0] {
-            TokenType::BitwiseShift(shift_direction) => {
-                self.tokens.pop_front();
+        while let Some(token) = self.tokens.front() {
+            match token {
+                TokenType::BitwiseShift(direction) => {
+                    let dir = *direction;
+                    self.tokens.pop_front();
 
-                if self.tokens[0] == TokenType::EOF {
-                    return Err((
-                        Errors::SyntaxError,
-                        "missing value after the BitwiseShift operator".to_owned(),
-                    ));
+                    if self.tokens[0] == TokenType::EOF {
+                        return Err((
+                            Errors::SyntaxError,
+                            "missing value after the BitShift operator".to_owned(),
+                        ));
+                    }
+
+                    let right = Parser::parse_aditive_expr(self);
+
+                    if right.is_ok() {
+                        left = Ok(Ast::BitwiseShift {
+                            shift_direction: dir,
+                            left: Box::new(left.unwrap()),
+                            right: Box::new(right.unwrap()),
+                        });
+                    } else {
+                        return right;
+                    }
                 }
-
-                let right = Parser::parse_aditive_expr(self);
-
-                if right.is_ok() {
-                    return Ok(Ast::BitwiseShift {
-                        shift_direction: shift_direction,
-                        left: Box::new(left.unwrap()),
-                        right: Box::new(right.unwrap()),
-                    });
-                } else {
-                    return right;
-                }
+                _ => break,
             }
-            _ => left,
         }
+        left
     }
 
-    fn parse_aditive_expr(&mut self) -> Result<Ast, (Errors, String)> { // TODO: Fix this and multiplicative by using a while loop
+    fn parse_aditive_expr(&mut self) -> Result<Ast, (Errors, String)> {
         let mut left = Parser::parse_multiplicative_expr(self);
         if left.is_err() {
             return left;
@@ -259,19 +263,11 @@ impl Parser {
     fn parse_primitive_expr(&mut self) -> Result<Ast, (Errors, String)> {
         if let Some(token) = self.tokens.pop_front() {
             match token {
-                TokenType::String(string) => {
-                    Ok(Ast::String(string.clone()))
-                }
-                TokenType::Int(int) => {
-                    Ok(Ast::Int(int))
-                }
-                TokenType::Float(float) => {
-                    Ok(Ast::Float(float))
-                }
-                TokenType::Identifier(iden) => {
-                    Ok(Ast::Identifier(iden.clone()))
-                }
-                _ => Err((Errors::SyntaxError, format!("Unknown Token {:?}", token)))
+                TokenType::String(string) => Ok(Ast::String(string.clone())),
+                TokenType::Int(int) => Ok(Ast::Int(int)),
+                TokenType::Float(float) => Ok(Ast::Float(float)),
+                TokenType::Identifier(iden) => Ok(Ast::Identifier(iden.clone())),
+                _ => Err((Errors::SyntaxError, format!("Unknown Token {:?}", token))),
             }
         } else {
             Err((Errors::SyntaxError, "Unexpected end of tokens".to_owned()))
