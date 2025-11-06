@@ -69,7 +69,7 @@ impl Parser {
                 ));
             }
 
-            let right = Parser::parse_expression(self);
+            let right = Parser::parse_comparison_expr(self);
 
             if right.is_ok() {
                 return Ok(Ast::Not(Box::new(right.unwrap())));
@@ -78,33 +78,42 @@ impl Parser {
             }
         }
 
-        let left = Parser::parse_comparison_expr(self);
+        let mut left = Parser::parse_comparison_expr(self);
         if left.is_err() {
             return left;
         }
-        match self.tokens[0] {
-            TokenType::LogicalExpr(logical_expr) => {
-                self.tokens.pop_front();
-                if self.tokens[0] == TokenType::EOF {
-                    return Err((
-                        Errors::SyntaxError,
-                        "missing value after the logical operator".to_owned(),
-                    ));
-                }
-                let right = Parser::parse_comparison_expr(self);
 
-                if right.is_ok() {
-                    return Ok(Ast::LogicalExpr {
-                        operator: logical_expr,
-                        left: Box::new(left.unwrap()),
-                        right: Box::new(right.unwrap()),
-                    });
-                } else {
-                    return right;
+        while let Some(token) = self.tokens.front() {
+            match token {
+                TokenType::LogicalExpr(
+                    operator,
+                ) => {
+                    let op = *operator;
+                    self.tokens.pop_front();
+
+                    if self.tokens[0] == TokenType::EOF {
+                        return Err((
+                            Errors::SyntaxError,
+                            "missing value after the Logical operator".to_owned(),
+                        ));
+                    }
+
+                    let right = Parser::parse_comparison_expr(self);
+
+                    if right.is_ok() {
+                        left = Ok(Ast::LogicalExpr{
+                            operator: op,
+                            left: Box::new(left.unwrap()),
+                            right: Box::new(right.unwrap()),
+                        });
+                    } else {
+                        return right;
+                    }
                 }
+                _ => break,
             }
-            _ => left,
         }
+        left
     }
 
     fn parse_comparison_expr(&mut self) -> Result<Ast, (Errors, String)> {
