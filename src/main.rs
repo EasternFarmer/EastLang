@@ -3,10 +3,14 @@ use std::io::Write;
 
 mod errors;
 mod lexer_types;
+mod ast_types;
 mod lexer;
+mod parser;
 
 use lexer_types::TokenType;
+use ast_types::Ast;
 
+#[allow(dead_code)]
 fn log_token(token: &TokenType) {
     match token {
         TokenType::Int(value) => print!("Int({}) ", value),
@@ -16,8 +20,8 @@ fn log_token(token: &TokenType) {
         TokenType::Callable => print!("Callable() "),
         TokenType::Const => print!("Const() "),
         TokenType::Local => print!("Local() "),
-        TokenType::BinaryOperator(value) => print!("BinaryOperator({}) ", value),
-        TokenType::BitwiseShift(value) => print!("BitwiseShift({}) ", value),
+        TokenType::BinaryOperator(value) => print!("BinaryOperator({:?}) ", value),
+        TokenType::BitwiseShift(value) => print!("BitwiseShift({:?}) ", value),
         TokenType::Equals => print!("Equals() "),
         TokenType::If => print!("If() "),
         TokenType::Else => print!("Else() "),
@@ -35,9 +39,70 @@ fn log_token(token: &TokenType) {
         TokenType::Comma => print!("Comma() "),
         TokenType::Dot => print!("Dot() "),
         TokenType::Monkey => print!("Monkey() "),
-        TokenType::EndOfFile => print!("EndOfFile() "),
+        TokenType::EOF => print!("EOF() "),
         TokenType::Colon => print!("Colon() "),
         TokenType::SemiColon => print!("SemiColon() "),
+    }
+}
+
+fn log_ast(program: &Ast, indent: i16) {
+    let mut indent_str = String::new();
+    for _ in 0..indent {
+        indent_str.push_str(" ");
+    }
+    match &program {
+        Ast::Program(asts) => {
+            println!("{indent_str}Program(");
+            for ast in asts {
+                log_ast(ast.as_ref(), indent+2);
+            } 
+            println!("{indent_str})");
+        },
+        Ast::Not(ast) => {
+            println!("{indent_str}Not(");
+            log_ast(ast.as_ref(), indent+2);
+            println!("{indent_str})");
+        },
+        Ast::Comparison { operator, left, right } => {
+            println!("{indent_str}Comparison(");
+            log_ast(left, indent+2);
+            println!("{indent_str}{:?}", operator);
+            log_ast(right, indent+2);
+            println!("{indent_str})");
+        },
+        Ast::LogicalExpr { operator, left, right } => {
+            println!("{indent_str}LogicalExpr(");
+            log_ast(left, indent+2);
+            println!("{indent_str}{:?}", operator);
+            log_ast(right, indent+2);
+            println!("{indent_str})");
+        },
+        Ast::BitwiseShift { shift_direction, left, right } => {
+            println!("{indent_str}BitwiseShift(");
+            log_ast(left, indent+2);
+            println!("{indent_str}{:?}", shift_direction);
+            log_ast(right, indent+2);
+            println!("{indent_str})");
+        },
+        Ast::BinaryOperator { operator, left, right } => {
+            println!("{indent_str}BinaryOperator(");
+            log_ast(left, indent+2);
+            println!("{indent_str}{:?}", operator);
+            log_ast(right, indent+2);
+            println!("{indent_str})");
+        },
+        Ast::String(str) => {
+            println!("{indent_str}{}", str.as_ref());
+        },
+        Ast::Int(int) => {
+            println!("{indent_str}{}", int);
+        },
+        Ast::Float(float) => {
+            println!("{indent_str}{}", float);
+        },
+        Ast::Identifier(iden) => {
+            println!("{indent_str}Identifier({})", iden.as_ref());
+        },
     }
 }
 
@@ -51,16 +116,15 @@ fn main() {
         .read_line(&mut input)
         .expect("Failed to read line");
 
-    let result = lexer::tokenize(&input);
+    let result = parser::Parser::new(&input);
 
     if result.is_ok() {
-        let tokens = result.unwrap();
-        for token in &tokens {
-            log_token(token);
+        let program = result.unwrap().parse();
+        if program.is_ok() {
+            log_ast(&program.unwrap(), 0);
+        } else {
+            errors::log_error(program.err().unwrap());
         }
-        println!();
-
-        println!("Executed \"{}\"", input.trim());
     } else {
         errors::log_error(result.err().unwrap());
     }

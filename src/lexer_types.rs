@@ -1,33 +1,33 @@
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub(crate) enum LogicalExpr {
-  And,
-  Or,
-  Xor
+    And,
+    Or,
+    Xor,
 }
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub(crate) enum ComparisonExpr {
-  Equals,
-  NotEquals,
-  Greater,
-  GreaterEqual,
-  Less,
-  LessEqual
+    Equals,
+    NotEquals,
+    Greater,
+    GreaterEqual,
+    Less,
+    LessEqual,
 }
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub(crate) enum BinaryOperator {
-  Add,
-  Substract,
-  Multiply,
-  Divide,
-  Modulo
+    Add,
+    Substract,
+    Multiply,
+    Divide,
+    Modulo,
 }
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub(crate) enum BitwiseShift {
-  Left,
-  Right
+    Left,
+    Right,
 }
 
 #[derive(Debug, PartialEq, Clone)]
