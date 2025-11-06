@@ -174,75 +174,81 @@ impl Parser {
     }
 
     fn parse_aditive_expr(&mut self) -> Result<Ast, (Errors, String)> { // TODO: Fix this and multiplicative by using a while loop
-        let left = Parser::parse_multiplicative_expr(self);
+        let mut left = Parser::parse_multiplicative_expr(self);
         if left.is_err() {
             return left;
         }
 
-        match self.tokens[0] {
-            TokenType::BinaryOperator(
-                operator @ (BinaryOperator::Add | BinaryOperator::Substract),
-            ) => {
-                self.tokens.pop_front();
+        while let Some(token) = self.tokens.front() {
+            match token {
+                TokenType::BinaryOperator(
+                    operator @ (BinaryOperator::Add | BinaryOperator::Substract),
+                ) => {
+                    let op = *operator;
+                    self.tokens.pop_front();
 
-                if self.tokens[0] == TokenType::EOF {
-                    return Err((
-                        Errors::SyntaxError,
-                        "missing value after the Binary operator".to_owned(),
-                    ));
+                    if self.tokens[0] == TokenType::EOF {
+                        return Err((
+                            Errors::SyntaxError,
+                            "missing value after the Binary operator".to_owned(),
+                        ));
+                    }
+
+                    let right = Parser::parse_multiplicative_expr(self);
+
+                    if right.is_ok() {
+                        left = Ok(Ast::BinaryOperator {
+                            operator: op,
+                            left: Box::new(left.unwrap()),
+                            right: Box::new(right.unwrap()),
+                        });
+                    } else {
+                        return right;
+                    }
                 }
-
-                let right = Parser::parse_multiplicative_expr(self);
-
-                if right.is_ok() {
-                    return Ok(Ast::BinaryOperator {
-                        operator: operator,
-                        left: Box::new(left.unwrap()),
-                        right: Box::new(right.unwrap()),
-                    });
-                } else {
-                    return right;
-                }
+                _ => break,
             }
-            _ => left,
         }
+        left
     }
 
     fn parse_multiplicative_expr(&mut self) -> Result<Ast, (Errors, String)> {
-        let left = Parser::parse_call_member_expr(self);
+        let mut left = Parser::parse_call_member_expr(self);
         if left.is_err() {
             return left;
         }
 
-        match self.tokens[0] {
-            TokenType::BinaryOperator(
-                operator @ (BinaryOperator::Multiply
-                | BinaryOperator::Divide
-                | BinaryOperator::Modulo),
-            ) => {
-                self.tokens.pop_front();
+        while let Some(token) = self.tokens.front() {
+            match token {
+                TokenType::BinaryOperator(
+                    operator @ (BinaryOperator::Add | BinaryOperator::Substract),
+                ) => {
+                    let op = *operator;
+                    self.tokens.pop_front();
 
-                if self.tokens[0] == TokenType::EOF {
-                    return Err((
-                        Errors::SyntaxError,
-                        "missing value after the Binary operator".to_owned(),
-                    ));
+                    if self.tokens[0] == TokenType::EOF {
+                        return Err((
+                            Errors::SyntaxError,
+                            "missing value after the Binary operator".to_owned(),
+                        ));
+                    }
+
+                    let right = Parser::parse_call_member_expr(self);
+
+                    if right.is_ok() {
+                        left = Ok(Ast::BinaryOperator {
+                            operator: op,
+                            left: Box::new(left.unwrap()),
+                            right: Box::new(right.unwrap()),
+                        });
+                    } else {
+                        return right;
+                    }
                 }
-
-                let right = Parser::parse_call_member_expr(self);
-
-                if right.is_ok() {
-                    return Ok(Ast::BinaryOperator {
-                        operator: operator,
-                        left: Box::new(left.unwrap()),
-                        right: Box::new(right.unwrap()),
-                    });
-                } else {
-                    return right;
-                }
+                _ => break,
             }
-            _ => left,
         }
+        left
     }
 
     fn parse_call_member_expr(&mut self) -> Result<Ast, (Errors, String)> {
