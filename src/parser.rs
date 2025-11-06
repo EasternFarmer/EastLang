@@ -108,36 +108,42 @@ impl Parser {
     }
 
     fn parse_comparison_expr(&mut self) -> Result<Ast, (Errors, String)> {
-        let left = Parser::parse_binary_shift(self);
+        let mut left = Parser::parse_binary_shift(self);
         if left.is_err() {
             return left;
         }
 
-        match self.tokens[0] {
-            TokenType::ComparisonExpr(comp_type) => {
-                self.tokens.pop_front();
+        while let Some(token) = self.tokens.front() {
+            match token {
+                TokenType::ComparisonExpr(
+                    operator,
+                ) => {
+                    let op = *operator;
+                    self.tokens.pop_front();
 
-                if self.tokens[0] == TokenType::EOF {
-                    return Err((
-                        Errors::SyntaxError,
-                        "missing value after the comparison operator".to_owned(),
-                    ));
+                    if self.tokens[0] == TokenType::EOF {
+                        return Err((
+                            Errors::SyntaxError,
+                            "missing value after the Comparison operator".to_owned(),
+                        ));
+                    }
+
+                    let right = Parser::parse_binary_shift(self);
+
+                    if right.is_ok() {
+                        left = Ok(Ast::Comparison{
+                            operator: op,
+                            left: Box::new(left.unwrap()),
+                            right: Box::new(right.unwrap()),
+                        });
+                    } else {
+                        return right;
+                    }
                 }
-
-                let right = Parser::parse_binary_shift(self);
-
-                if right.is_ok() {
-                    return Ok(Ast::Comparison {
-                        operator: comp_type,
-                        left: Box::new(left.unwrap()),
-                        right: Box::new(right.unwrap()),
-                    });
-                } else {
-                    return right;
-                }
+                _ => break,
             }
-            _ => left,
         }
+        left
     }
 
     fn parse_binary_shift(&mut self) -> Result<Ast, (Errors, String)> {
