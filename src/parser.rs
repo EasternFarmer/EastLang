@@ -499,6 +499,17 @@ impl Parser {
                 TokenType::Int(int) => Ok(Ast::Int(int)),
                 TokenType::Float(float) => Ok(Ast::Float(float)),
                 TokenType::Identifier(iden) => Ok(Ast::Identifier(iden.clone())),
+                TokenType::OpenParen => {
+                    let result = Parser::parse_expression(self);
+                    if result.is_err() {return result;}
+
+                    if self.tokens[0] != TokenType::ClosedParen {
+                        return Err((Errors::SyntaxError, "Expected closing paren".to_owned()));
+                    }
+                    self.tokens.pop_front();
+                    
+                    result
+                }
                 TokenType::If => {
                     let check = Parser::parse_expression(self);
                     if check.is_err() {
