@@ -33,6 +33,14 @@ pub(crate) enum Ast {
         right: Box<Ast>,
         local: bool,
     },
+    MemberExpression {
+        left: Box<Ast>,
+        right: Box<Ast>,
+    },
+    CallExpression {
+        left: Box<Ast>,
+        arguments: Vec<Ast>,
+    },
     String(Box<str>),
     Int(i32),
     Float(f32),

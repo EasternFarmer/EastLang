@@ -86,7 +86,10 @@ impl Parser {
                     return right;
                 }
             } else {
-                return Err((Errors::SyntaxError, "Constant declaration needs a value to be declared".to_owned()));
+                return Err((
+                    Errors::SyntaxError,
+                    "Constant declaration needs a value to be declared".to_owned(),
+                ));
             }
             return Ok(Ast::VariableDeclaration {
                 identifier: identifier,
@@ -374,7 +377,106 @@ impl Parser {
 
     fn parse_call_member_expr(&mut self) -> Result<Ast, (Errors, String)> {
         //TODO: implement parse_call_member_expr
-        return Parser::parse_primitive_expr(self);
+        let mut left = Parser::parse_primitive_expr(self);
+        if left.is_err() {
+            return left;
+        }
+        while self.tokens[0] == TokenType::Dot
+            || self.tokens[0] == TokenType::OpenParen
+            || self.tokens[0] == TokenType::OpenBracket
+        {
+            match self.tokens[0] {
+                TokenType::Dot => {
+                    self.tokens.pop_front(); // pop off the dot
+
+                    let r_result = Parser::parse_primitive_expr(self);
+                    if r_result.is_err() {
+                        return r_result;
+                    }
+
+                    let right = r_result.unwrap();
+                    if !matches!(right, Ast::Identifier(..)) {
+                        return Err((
+                            Errors::SyntaxError,
+                            "Expected a identifier after the dot expression".to_owned(),
+                        ));
+                    }
+
+                    left = Ok(Ast::MemberExpression {
+                        left: Box::new(left.unwrap()),
+                        right: Box::new(right),
+                    })
+                }
+                TokenType::OpenBracket => {
+                    self.tokens.pop_front(); // pop off the opening bracket
+
+                    if self.tokens[0] == TokenType::ClosedBracket {
+                        return Err((
+                            Errors::SyntaxError,
+                            "Expected an expression inside of the square brackets".to_owned(),
+                        ));
+                    }
+
+                    let right = Parser::parse_expression(self);
+                    if right.is_err() {
+                        return right;
+                    }
+
+                    if self.tokens[0] != TokenType::ClosedBracket {
+                        return Err((
+                            Errors::SyntaxError,
+                            "Expected a closing bracket after the membership expression".to_owned(),
+                        ));
+                    }
+                    self.tokens.pop_front();
+
+                    left = Ok(Ast::MemberExpression {
+                        left: Box::new(left.unwrap()),
+                        right: Box::new(right.unwrap()),
+                    })
+                }
+                TokenType::OpenParen => {
+                    self.tokens.pop_front(); // pop off the opening paren
+
+                    if self.tokens[0] == TokenType::ClosedParen { // handle no arguments
+                        self.tokens.pop_front(); // pop off the closing paren
+                        left = Ok(Ast::CallExpression { left: Box::new(left.unwrap()), arguments: Vec::new() });
+                        continue;
+                    }
+
+                    let first_arg = Parser::parse_expression(self);
+                    if first_arg.is_err() {
+                        return first_arg;
+                    }
+                    let mut arg_vec = vec![first_arg.unwrap()];
+                    while self.tokens[0] == TokenType::Comma {
+                        self.tokens.pop_front();
+
+                        let result = Parser::parse_expression(self);
+                        if result.is_err() {
+                            return result;
+                        }
+
+                        let arg = result.unwrap();
+                        arg_vec.push(arg);
+                    }
+
+                    if self.tokens[0] != TokenType::ClosedParen {
+                        return Err((Errors::SyntaxError, "Expected a closing paren after the call expression".to_owned()));
+                    }
+                    self.tokens.pop_front(); // pop off the closing paren
+
+                    left = Ok(Ast::CallExpression { left: Box::new(left.unwrap()), arguments: arg_vec })
+                }
+                _ => {
+                    return Err((
+                        Errors::SyntaxError,
+                        format!("Unexpected token {:?}", self.tokens[0]),
+                    ));
+                }
+            }
+        }
+        left
     }
 
     fn parse_primitive_expr(&mut self) -> Result<Ast, (Errors, String)> {

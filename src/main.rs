@@ -123,6 +123,28 @@ fn log_ast(program: &Ast, indent: i16) {
             println!("{indent_str}  )");
             println!("{indent_str})");
         },
+        Ast::MemberExpression { left, right } => {
+            println!("{indent_str}MemberExpression(");
+            println!("{indent_str}  left=(");
+            log_ast(&left, indent+4);
+            println!("{indent_str}  )");
+            println!("{indent_str}  right=(");
+            log_ast(&right, indent+4);
+            println!("{indent_str}  )");
+            println!("{indent_str})");
+        },
+        Ast::CallExpression { left, arguments } => {
+            println!("{indent_str}CallExpression(");
+            println!("{indent_str}  left=(");
+            log_ast(&left, indent+4);
+            println!("{indent_str}  )");
+            println!("{indent_str}  arguments=(");
+            for arg in &*&*&*&*&*&*&*&*&*&*&*arguments {
+                log_ast(&arg, indent+4);
+            }
+            println!("{indent_str}  )");
+            println!("{indent_str})");
+        },
     }
 }
 
