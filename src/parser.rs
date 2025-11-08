@@ -345,7 +345,7 @@ impl Parser {
         while let Some(token) = self.tokens.front() {
             match token {
                 TokenType::BinaryOperator(
-                    operator @ (BinaryOperator::Add | BinaryOperator::Substract),
+                    operator @ (BinaryOperator::Multiply | BinaryOperator::Divide | BinaryOperator::Modulo),
                 ) => {
                     let op = *operator;
                     self.tokens.pop_front();
