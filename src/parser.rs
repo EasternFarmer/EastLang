@@ -55,7 +55,113 @@ impl Parser {
     }
 
     fn parse_expression(&mut self) -> Result<Ast, (Errors, String)> {
-        return Parser::parse_logical_expr(self); // later change to assignment
+        return Parser::parse_assignment_expr(self);
+    }
+
+    fn parse_assignment_expr(&mut self) -> Result<Ast, (Errors, String)> {
+        if self.tokens[0] == TokenType::Const {
+            self.tokens.pop_front();
+
+            let identifier: Box<str>;
+            let result = Parser::parse_primitive_expr(self);
+            if result.is_err() {
+                return result;
+            }
+            match result.unwrap() {
+                Ast::Identifier(iden) => {
+                    identifier = iden;
+                }
+                _ => {
+                    return Err((
+                        Errors::SyntaxError,
+                        "Expected a Identifier after the const keyword".to_owned(),
+                    ));
+                }
+            }
+            let right: Result<Ast, (Errors, String)>;
+            if self.tokens[0] == TokenType::Equals {
+                self.tokens.pop_front(); // pop the equals off
+                right = Parser::parse_expression(self);
+                if right.is_err() {
+                    return right;
+                }
+            } else {
+                return Err((Errors::SyntaxError, "Constant declaration needs a value to be declared".to_owned()));
+            }
+            return Ok(Ast::VariableDeclaration {
+                identifier: identifier,
+                right: Box::new(right.unwrap()),
+                constant: true,
+            });
+        } else if self.tokens[0] == TokenType::Local {
+            self.tokens.pop_front();
+
+            let identifier: Ast;
+            let result = Parser::parse_primitive_expr(self);
+            if result.is_err() {
+                return result;
+            }
+            let token = result.unwrap();
+            match token {
+                Ast::Identifier(_) => {
+                    identifier = token;
+                }
+                _ => {
+                    return Err((
+                        Errors::SyntaxError,
+                        "Expected a Identifier after the local keyword".to_owned(),
+                    ));
+                }
+            }
+            let right: Result<Ast, (Errors, String)>;
+            if self.tokens[0] == TokenType::Equals {
+                self.tokens.pop_front(); // pop the equals off
+                right = Parser::parse_expression(self);
+                if right.is_err() {
+                    return right;
+                }
+            } else {
+                right = Ok(Ast::Identifier("empty".to_string().into_boxed_str()));
+            }
+            return Ok(Ast::Assignment {
+                identifier: Box::new(identifier),
+                right: Box::new(right.unwrap()),
+                local: true,
+            });
+        }
+        let mut left = Parser::parse_logical_expr(self);
+        if left.is_err() {
+            return left;
+        }
+
+        while let Some(token) = self.tokens.front() {
+            match token {
+                TokenType::Equals => {
+                    self.tokens.pop_front();
+
+                    if self.tokens[0] == TokenType::EOF {
+                        return Err((
+                            Errors::SyntaxError,
+                            "missing value after the Comparison operator".to_owned(),
+                        ));
+                    }
+
+                    let right = Parser::parse_binary_shift(self);
+
+                    if right.is_ok() {
+                        left = Ok(Ast::Assignment {
+                            identifier: Box::new(left.unwrap()),
+                            right: Box::new(right.unwrap()),
+                            local: false,
+                        });
+                    } else {
+                        return right;
+                    }
+                }
+                _ => break,
+            }
+        }
+        left
     }
 
     fn parse_logical_expr(&mut self) -> Result<Ast, (Errors, String)> {
@@ -85,9 +191,7 @@ impl Parser {
 
         while let Some(token) = self.tokens.front() {
             match token {
-                TokenType::LogicalExpr(
-                    operator,
-                ) => {
+                TokenType::LogicalExpr(operator) => {
                     let op = *operator;
                     self.tokens.pop_front();
 
@@ -101,7 +205,7 @@ impl Parser {
                     let right = Parser::parse_comparison_expr(self);
 
                     if right.is_ok() {
-                        left = Ok(Ast::LogicalExpr{
+                        left = Ok(Ast::LogicalExpr {
                             operator: op,
                             left: Box::new(left.unwrap()),
                             right: Box::new(right.unwrap()),
@@ -124,9 +228,7 @@ impl Parser {
 
         while let Some(token) = self.tokens.front() {
             match token {
-                TokenType::ComparisonExpr(
-                    operator,
-                ) => {
+                TokenType::ComparisonExpr(operator) => {
                     let op = *operator;
                     self.tokens.pop_front();
 
@@ -140,7 +242,7 @@ impl Parser {
                     let right = Parser::parse_binary_shift(self);
 
                     if right.is_ok() {
-                        left = Ok(Ast::Comparison{
+                        left = Ok(Ast::Comparison {
                             operator: op,
                             left: Box::new(left.unwrap()),
                             right: Box::new(right.unwrap()),

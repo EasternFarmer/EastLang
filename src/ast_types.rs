@@ -23,6 +23,16 @@ pub(crate) enum Ast {
         left: Box<Ast>,
         right: Box<Ast>,
     },
+    VariableDeclaration {
+        identifier: Box<str>,
+        right: Box<Ast>,
+        constant: bool,
+    },
+    Assignment {
+        identifier: Box<Ast>,
+        right: Box<Ast>,
+        local: bool,
+    },
     String(Box<str>),
     Int(i32),
     Float(f32),

@@ -92,16 +92,36 @@ fn log_ast(program: &Ast, indent: i16) {
             println!("{indent_str})");
         },
         Ast::String(str) => {
-            println!("{indent_str}{}", str.as_ref());
+            println!("{indent_str}String({})", str.as_ref());
         },
         Ast::Int(int) => {
-            println!("{indent_str}{}", int);
+            println!("{indent_str}Int({})", int);
         },
         Ast::Float(float) => {
-            println!("{indent_str}{}", float);
+            println!("{indent_str}Float({})", float);
         },
         Ast::Identifier(iden) => {
             println!("{indent_str}Identifier({})", iden.as_ref());
+        },
+        Ast::VariableDeclaration { identifier, right, constant } => {
+            println!("{indent_str}VariableDeclaration(");
+            println!("{indent_str}  identifier=\"{}\"", identifier.as_ref());
+            println!("{indent_str}  constant={}", constant);
+            println!("{indent_str}  value=(");
+            log_ast(&right, indent+4);
+            println!("{indent_str}  )");
+            println!("{indent_str})");
+        },
+        Ast::Assignment { identifier, right, local } => {
+            println!("{indent_str}Assignment(");
+            println!("{indent_str}  identifier=(");
+            log_ast(&identifier, indent+4);
+            println!("{indent_str}  )");
+            println!("{indent_str}  local={}", local);
+            println!("{indent_str}  value=(");
+            log_ast(&right, indent+4);
+            println!("{indent_str}  )");
+            println!("{indent_str})");
         },
     }
 }

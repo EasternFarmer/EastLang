@@ -130,7 +130,6 @@ pub(crate) fn tokenize(source_code: &str) -> Result<VecDeque<TokenType>, (Errors
                 deque.push_back(TokenType::ComparisonExpr(ComparisonExpr::Less));
             }
         } else if chars[0].is_digit(10) {
-            // TODO: Add non-base10 notations ( 0b101101 )
             let mut value: Vec<char> = Vec::new();
             if chars.len() >= 2 && chars[0] == '0' {
                 if chars[1] == 'b' {
