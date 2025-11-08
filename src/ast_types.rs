@@ -1,5 +1,6 @@
 use crate::lexer_types::*;
 
+#[derive(Debug)]
 pub(crate) enum Ast {
     Program(Vec<Box<Ast>>),
     Not(Box<Ast>),
@@ -40,6 +41,10 @@ pub(crate) enum Ast {
     CallExpression {
         left: Box<Ast>,
         arguments: Vec<Ast>,
+    },
+    IfExpression {
+        check: Box<Ast>,
+        body: Vec<Ast>,
     },
     String(Box<str>),
     Int(i32),

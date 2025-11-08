@@ -345,7 +345,9 @@ impl Parser {
         while let Some(token) = self.tokens.front() {
             match token {
                 TokenType::BinaryOperator(
-                    operator @ (BinaryOperator::Multiply | BinaryOperator::Divide | BinaryOperator::Modulo),
+                    operator @ (BinaryOperator::Multiply
+                    | BinaryOperator::Divide
+                    | BinaryOperator::Modulo),
                 ) => {
                     let op = *operator;
                     self.tokens.pop_front();
@@ -438,9 +440,13 @@ impl Parser {
                 TokenType::OpenParen => {
                     self.tokens.pop_front(); // pop off the opening paren
 
-                    if self.tokens[0] == TokenType::ClosedParen { // handle no arguments
+                    if self.tokens[0] == TokenType::ClosedParen {
+                        // handle no arguments
                         self.tokens.pop_front(); // pop off the closing paren
-                        left = Ok(Ast::CallExpression { left: Box::new(left.unwrap()), arguments: Vec::new() });
+                        left = Ok(Ast::CallExpression {
+                            left: Box::new(left.unwrap()),
+                            arguments: Vec::new(),
+                        });
                         continue;
                     }
 
@@ -462,11 +468,17 @@ impl Parser {
                     }
 
                     if self.tokens[0] != TokenType::ClosedParen {
-                        return Err((Errors::SyntaxError, "Expected a closing paren after the call expression".to_owned()));
+                        return Err((
+                            Errors::SyntaxError,
+                            "Expected a closing paren after the call expression".to_owned(),
+                        ));
                     }
                     self.tokens.pop_front(); // pop off the closing paren
 
-                    left = Ok(Ast::CallExpression { left: Box::new(left.unwrap()), arguments: arg_vec })
+                    left = Ok(Ast::CallExpression {
+                        left: Box::new(left.unwrap()),
+                        arguments: arg_vec,
+                    })
                 }
                 _ => {
                     return Err((
@@ -482,10 +494,49 @@ impl Parser {
     fn parse_primitive_expr(&mut self) -> Result<Ast, (Errors, String)> {
         if let Some(token) = self.tokens.pop_front() {
             match token {
+                // TODO: while, callable, open paren
                 TokenType::String(string) => Ok(Ast::String(string.clone())),
                 TokenType::Int(int) => Ok(Ast::Int(int)),
                 TokenType::Float(float) => Ok(Ast::Float(float)),
                 TokenType::Identifier(iden) => Ok(Ast::Identifier(iden.clone())),
+                TokenType::If => {
+                    let check = Parser::parse_expression(self);
+                    if check.is_err() {
+                        return check;
+                    }
+
+                    if self.tokens[0] != TokenType::OpenBrace {
+                        return Err((
+                            Errors::SyntaxError,
+                            "Expected a body after the if statement".to_owned(),
+                        ));
+                    }
+                    self.tokens.pop_front(); // pop the opening brace
+
+                    let mut body_vec: Vec<Ast> = Vec::new();
+                    while self.tokens[0] != TokenType::ClosedBrace
+                        && self.tokens[0] != TokenType::EOF
+                    {
+                        let result = Parser::parse_expression(self);
+                        if result.is_err() {
+                            return result;
+                        }
+                        body_vec.push(result.unwrap());
+                    }
+
+                    if self.tokens[0] != TokenType::ClosedBrace {
+                        return Err((
+                            Errors::SyntaxError,
+                            "Expected a closing brace for the if block".to_owned(),
+                        ));
+                    }
+                    self.tokens.pop_front();
+
+                    return Ok(Ast::IfExpression {
+                        check: Box::new(check.unwrap()),
+                        body: body_vec,
+                    });
+                }
                 _ => Err((Errors::SyntaxError, format!("Unknown Token {:?}", token))),
             }
         } else {
