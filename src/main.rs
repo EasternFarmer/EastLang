@@ -169,6 +169,29 @@ fn log_ast(program: &Ast, indent: i16) {
             println!("{indent_str}  )");
             println!("{indent_str})");
         },
+        Ast::CallableExpression { parameters, body } => {
+            println!("{indent_str}CallableExpression(");
+            println!("{indent_str}  parameters=(");
+            for (i, (name, value)) in parameters.iter().enumerate() {
+                println!("{indent_str}    {i}=(");
+                println!("{indent_str}      name=(");
+                log_ast(name, indent+8);
+                println!("{indent_str}      )");
+                println!("{indent_str}      value=(");
+                if let Some(v) = value.as_ref() {
+                    log_ast(v, indent+8);
+                }
+                println!("{indent_str}      )");
+                println!("{indent_str}    )");
+            }
+            println!("{indent_str}  )");
+            println!("{indent_str}  body=(");
+            for elem in body {
+                log_ast(&elem, indent+4);
+            }
+            println!("{indent_str}  )");
+            println!("{indent_str})");
+        },
     }
 }
 

@@ -490,17 +490,50 @@ impl Parser {
         left
     }
 
+    fn parse_call_arg(
+        &mut self,
+        parameters: &mut Vec<(Ast, Option<Ast>)>,
+    ) -> Option<(Errors, String)> {
+        let result = Parser::parse_primitive_expr(self);
+        if result.is_err() {
+            return result.err();
+        }
+        let param = result.unwrap();
+        match param {
+            Ast::Identifier(_) => {
+                if self.tokens[0] != TokenType::Equals {
+                    parameters.push((param, None));
+                    return None;
+                }
+                self.tokens.pop_front(); // remove the equals
+                let result = Parser::parse_expression(self);
+                if result.is_err() {
+                    return result.err();
+                };
+                parameters.push((param, Some(result.unwrap())));
+            }
+            _ => {
+                return Some((
+                    Errors::SyntaxError,
+                    "Expected a identifier in a callable parameter".to_owned(),
+                ));
+            }
+        }
+        return None;
+    }
+
     fn parse_primitive_expr(&mut self) -> Result<Ast, (Errors, String)> {
         if let Some(token) = self.tokens.pop_front() {
             match token {
-                // TODO: callable
                 TokenType::String(string) => Ok(Ast::String(string.clone())),
                 TokenType::Int(int) => Ok(Ast::Int(int)),
                 TokenType::Float(float) => Ok(Ast::Float(float)),
                 TokenType::Identifier(iden) => Ok(Ast::Identifier(iden.clone())),
                 TokenType::OpenParen => {
                     let result = Parser::parse_expression(self);
-                    if result.is_err() {return result;}
+                    if result.is_err() {
+                        return result;
+                    }
 
                     if self.tokens[0] != TokenType::ClosedParen {
                         return Err((Errors::SyntaxError, "Expected closing paren".to_owned()));
@@ -584,7 +617,85 @@ impl Parser {
                         check: Box::new(check.unwrap()),
                         body: body_vec,
                     });
-                },
+                }
+                TokenType::Callable => {
+                    if self.tokens[0] != TokenType::OpenParen {
+                        return Err((
+                            Errors::SyntaxError,
+                            "Expected Opening Paren after the callable keyword".to_owned(),
+                        ));
+                    }
+                    self.tokens.pop_front(); // eat the open paren
+
+                    let mut parameters: Vec<(Ast, Option<Ast>)> = Vec::new();
+
+                    if self.tokens[0] != TokenType::ClosedParen {
+                        if self.tokens[0] == TokenType::EOF {
+                            return Err((
+                                Errors::SyntaxError,
+                                "Expected a closing paren to the callable expression".to_owned(),
+                            ));
+                        }
+                        if self.tokens[0] != TokenType::ClosedParen {
+                            match Parser::parse_call_arg(self, &mut parameters) {
+                                Some(err) => return Err(err),
+                                None => {}
+                            }
+                        }
+                        while self.tokens[0] != TokenType::ClosedParen
+                            && self.tokens[0] == TokenType::Comma
+                        {
+                            self.tokens.pop_front(); // pop off the comma
+                            match Parser::parse_call_arg(self, &mut parameters) {
+                                Some(err) => return Err(err),
+                                None => {}
+                            }
+                        }
+                        if self.tokens[0] == TokenType::EOF {
+                            return Err((
+                                Errors::SyntaxError,
+                                "Expected a closing paren to the callable expression".to_owned(),
+                            ));
+                        }
+                    }
+                    if self.tokens[0] != TokenType::ClosedParen {
+                        return Err((
+                            Errors::SyntaxError,
+                            "Expected a closing paren to the callable expression".to_owned(),
+                        ));
+                    }
+
+                    self.tokens.pop_front(); // eat the closed paren
+
+                    if self.tokens[0] != TokenType::OpenBrace {
+                        return Err((
+                            Errors::SyntaxError,
+                            "Expected a body after the callable params".to_owned(),
+                        ));
+                    }
+                    self.tokens.pop_front(); // pop the opening brace
+
+                    let mut body = Vec::new();
+                    while self.tokens[0] != TokenType::ClosedBrace
+                        && self.tokens[0] != TokenType::EOF
+                    {
+                        let result = Parser::parse_expression(self);
+                        if result.is_err() {
+                            return result;
+                        }
+                        body.push(result.unwrap());
+                    }
+
+                    if self.tokens[0] != TokenType::ClosedBrace {
+                        return Err((
+                            Errors::SyntaxError,
+                            "Expected a closing brace after the callable block".to_owned(),
+                        ));
+                    }
+                    self.tokens.pop_front();
+
+                    return Ok(Ast::CallableExpression { parameters, body });
+                }
                 _ => Err((Errors::SyntaxError, format!("Unknown Token {:?}", token))),
             }
         } else {
