@@ -378,7 +378,6 @@ impl Parser {
     }
 
     fn parse_call_member_expr(&mut self) -> Result<Ast, (Errors, String)> {
-        //TODO: implement parse_call_member_expr
         let mut left = Parser::parse_primitive_expr(self);
         if left.is_err() {
             return left;
@@ -494,7 +493,7 @@ impl Parser {
     fn parse_primitive_expr(&mut self) -> Result<Ast, (Errors, String)> {
         if let Some(token) = self.tokens.pop_front() {
             match token {
-                // TODO: while, callable, open paren
+                // TODO: callable
                 TokenType::String(string) => Ok(Ast::String(string.clone())),
                 TokenType::Int(int) => Ok(Ast::Int(int)),
                 TokenType::Float(float) => Ok(Ast::Float(float)),
@@ -507,7 +506,7 @@ impl Parser {
                         return Err((Errors::SyntaxError, "Expected closing paren".to_owned()));
                     }
                     self.tokens.pop_front();
-                    
+
                     result
                 }
                 TokenType::If => {
@@ -519,7 +518,7 @@ impl Parser {
                     if self.tokens[0] != TokenType::OpenBrace {
                         return Err((
                             Errors::SyntaxError,
-                            "Expected a body after the if statement".to_owned(),
+                            "Expected a body after the if check".to_owned(),
                         ));
                     }
                     self.tokens.pop_front(); // pop the opening brace
@@ -548,6 +547,44 @@ impl Parser {
                         body: body_vec,
                     });
                 }
+                TokenType::While => {
+                    let check = Parser::parse_expression(self);
+                    if check.is_err() {
+                        return check;
+                    }
+
+                    if self.tokens[0] != TokenType::OpenBrace {
+                        return Err((
+                            Errors::SyntaxError,
+                            "Expected a body after the while check".to_owned(),
+                        ));
+                    }
+                    self.tokens.pop_front(); // pop the opening brace
+
+                    let mut body_vec: Vec<Ast> = Vec::new();
+                    while self.tokens[0] != TokenType::ClosedBrace
+                        && self.tokens[0] != TokenType::EOF
+                    {
+                        let result = Parser::parse_expression(self);
+                        if result.is_err() {
+                            return result;
+                        }
+                        body_vec.push(result.unwrap());
+                    }
+
+                    if self.tokens[0] != TokenType::ClosedBrace {
+                        return Err((
+                            Errors::SyntaxError,
+                            "Expected a closing brace for the while block".to_owned(),
+                        ));
+                    }
+                    self.tokens.pop_front();
+
+                    return Ok(Ast::WhileExpression {
+                        check: Box::new(check.unwrap()),
+                        body: body_vec,
+                    });
+                },
                 _ => Err((Errors::SyntaxError, format!("Unknown Token {:?}", token))),
             }
         } else {

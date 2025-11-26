@@ -46,6 +46,10 @@ pub(crate) enum Ast {
         check: Box<Ast>,
         body: Vec<Ast>,
     },
+    WhileExpression {
+        check: Box<Ast>,
+        body: Vec<Ast>,
+    },
     String(Box<str>),
     Int(i32),
     Float(f32),

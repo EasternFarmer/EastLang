@@ -157,6 +157,18 @@ fn log_ast(program: &Ast, indent: i16) {
             println!("{indent_str}  )");
             println!("{indent_str})");
         },
+        Ast::WhileExpression { check, body } => {
+            println!("{indent_str}WhileExpression(");
+            println!("{indent_str}  check=(");
+            log_ast(&check, indent+4);
+            println!("{indent_str}  )");
+            println!("{indent_str}  body=(");
+            for elem in body {
+                log_ast(&elem, indent+4);
+            }
+            println!("{indent_str}  )");
+            println!("{indent_str})");
+        },
     }
 }
 
