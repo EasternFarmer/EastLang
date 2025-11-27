@@ -45,6 +45,7 @@ fn log_token(token: &TokenType) {
     }
 }
 
+#[allow(dead_code)]
 fn log_ast(program: &Ast, indent: i16) {
     let mut indent_str = String::new();
     for _ in 0..indent {
@@ -206,15 +207,15 @@ fn main() {
         .expect("Failed to read line");
 
     let result = parser::Parser::new(&input);
-
-    if result.is_ok() {
-        let program = result.unwrap().parse();
-        if program.is_ok() {
-            log_ast(&program.unwrap(), 0);
-        } else {
-            errors::log_error(program.err().unwrap());
+    match result {
+        Ok(mut parser) => {
+            match parser.parse() {
+                Ok(ast) => {
+                    println!("{:#?}", ast);
+                }
+                Err(err) => errors::log_error(err)
+            }
         }
-    } else {
-        errors::log_error(result.err().unwrap());
+        Err(err) => errors::log_error(err)
     }
 }

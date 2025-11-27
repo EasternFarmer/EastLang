@@ -24,15 +24,8 @@ pub(crate) struct Parser {
 
 impl Parser {
     pub(crate) fn new(source_code: &str) -> Result<Self, (Errors, String)> {
-        let result = lexer::tokenize(source_code);
-
-        if result.is_ok() {
-            Ok(Self {
-                tokens: result.unwrap(),
-            })
-        } else {
-            Err(result.err().unwrap())
-        }
+        let tokens = lexer::tokenize(source_code)?;
+        Ok(Self { tokens })
     }
 
     #[allow(dead_code)]
@@ -44,12 +37,8 @@ impl Parser {
         let mut program_body: Vec<Box<Ast>> = Vec::new();
         while self.tokens.len() > 1 {
             // last one is EOF
-            let result = Parser::parse_expression(self);
-            if result.is_ok() {
-                program_body.push(Box::new(result.unwrap()));
-            } else {
-                return result;
-            }
+            let result = Parser::parse_expression(self)?;
+            program_body.push(Box::new(result));
         }
         return Ok(Ast::Program(program_body));
     }
@@ -63,11 +52,8 @@ impl Parser {
             self.tokens.pop_front();
 
             let identifier: Box<str>;
-            let result = Parser::parse_primitive_expr(self);
-            if result.is_err() {
-                return result;
-            }
-            match result.unwrap() {
+            let result = Parser::parse_primitive_expr(self)?;
+            match result {
                 Ast::Identifier(iden) => {
                     identifier = iden;
                 }
@@ -78,13 +64,10 @@ impl Parser {
                     ));
                 }
             }
-            let right: Result<Ast, (Errors, String)>;
+            let right: Ast;
             if self.tokens[0] == TokenType::Equals {
                 self.tokens.pop_front(); // pop the equals off
-                right = Parser::parse_expression(self);
-                if right.is_err() {
-                    return right;
-                }
+                right = Parser::parse_expression(self)?;
             } else {
                 return Err((
                     Errors::SyntaxError,
@@ -93,18 +76,14 @@ impl Parser {
             }
             return Ok(Ast::VariableDeclaration {
                 identifier: identifier,
-                right: Box::new(right.unwrap()),
+                right: Box::new(right),
                 constant: true,
             });
         } else if self.tokens[0] == TokenType::Local {
             self.tokens.pop_front();
 
             let identifier: Ast;
-            let result = Parser::parse_primitive_expr(self);
-            if result.is_err() {
-                return result;
-            }
-            let token = result.unwrap();
+            let token = Parser::parse_primitive_expr(self)?;
             match token {
                 Ast::Identifier(_) => {
                     identifier = token;
@@ -116,26 +95,20 @@ impl Parser {
                     ));
                 }
             }
-            let right: Result<Ast, (Errors, String)>;
+            let right: Ast;
             if self.tokens[0] == TokenType::Equals {
                 self.tokens.pop_front(); // pop the equals off
-                right = Parser::parse_expression(self);
-                if right.is_err() {
-                    return right;
-                }
+                right = Parser::parse_expression(self)?;
             } else {
-                right = Ok(Ast::Identifier("empty".to_string().into_boxed_str()));
+                right = Ast::Identifier("empty".to_string().into_boxed_str());
             }
             return Ok(Ast::Assignment {
                 identifier: Box::new(identifier),
-                right: Box::new(right.unwrap()),
+                right: Box::new(right),
                 local: true,
             });
         }
-        let mut left = Parser::parse_logical_expr(self);
-        if left.is_err() {
-            return left;
-        }
+        let mut left = Parser::parse_logical_expr(self)?;
 
         while let Some(token) = self.tokens.front() {
             match token {
@@ -149,22 +122,18 @@ impl Parser {
                         ));
                     }
 
-                    let right = Parser::parse_binary_shift(self);
+                    let right = Parser::parse_binary_shift(self)?;
 
-                    if right.is_ok() {
-                        left = Ok(Ast::Assignment {
-                            identifier: Box::new(left.unwrap()),
-                            right: Box::new(right.unwrap()),
-                            local: false,
-                        });
-                    } else {
-                        return right;
-                    }
+                    left = Ast::Assignment {
+                        identifier: Box::new(left),
+                        right: Box::new(right),
+                        local: false,
+                    };
                 }
                 _ => break,
             }
         }
-        left
+        Ok(left)
     }
 
     fn parse_logical_expr(&mut self) -> Result<Ast, (Errors, String)> {
@@ -178,19 +147,12 @@ impl Parser {
                 ));
             }
 
-            let right = Parser::parse_comparison_expr(self);
+            let right = Parser::parse_comparison_expr(self)?;
 
-            if right.is_ok() {
-                return Ok(Ast::Not(Box::new(right.unwrap())));
-            } else {
-                return right;
-            }
+            return Ok(Ast::Not(Box::new(right)));
         }
 
-        let mut left = Parser::parse_comparison_expr(self);
-        if left.is_err() {
-            return left;
-        }
+        let mut left = Parser::parse_comparison_expr(self)?;
 
         while let Some(token) = self.tokens.front() {
             match token {
@@ -205,29 +167,22 @@ impl Parser {
                         ));
                     }
 
-                    let right = Parser::parse_comparison_expr(self);
+                    let right = Parser::parse_comparison_expr(self)?;
 
-                    if right.is_ok() {
-                        left = Ok(Ast::LogicalExpr {
-                            operator: op,
-                            left: Box::new(left.unwrap()),
-                            right: Box::new(right.unwrap()),
-                        });
-                    } else {
-                        return right;
-                    }
+                    left = Ast::LogicalExpr {
+                        operator: op,
+                        left: Box::new(left),
+                        right: Box::new(right),
+                    };
                 }
                 _ => break,
             }
         }
-        left
+        Ok(left)
     }
 
     fn parse_comparison_expr(&mut self) -> Result<Ast, (Errors, String)> {
-        let mut left = Parser::parse_binary_shift(self);
-        if left.is_err() {
-            return left;
-        }
+        let mut left = Parser::parse_binary_shift(self)?;
 
         while let Some(token) = self.tokens.front() {
             match token {
@@ -242,29 +197,22 @@ impl Parser {
                         ));
                     }
 
-                    let right = Parser::parse_binary_shift(self);
+                    let right = Parser::parse_binary_shift(self)?;
 
-                    if right.is_ok() {
-                        left = Ok(Ast::Comparison {
-                            operator: op,
-                            left: Box::new(left.unwrap()),
-                            right: Box::new(right.unwrap()),
-                        });
-                    } else {
-                        return right;
-                    }
+                    left = Ast::Comparison {
+                        operator: op,
+                        left: Box::new(left),
+                        right: Box::new(right),
+                    };
                 }
                 _ => break,
             }
         }
-        left
+        Ok(left)
     }
 
     fn parse_binary_shift(&mut self) -> Result<Ast, (Errors, String)> {
-        let mut left = Parser::parse_aditive_expr(self);
-        if left.is_err() {
-            return left;
-        }
+        let mut left = Parser::parse_aditive_expr(self)?;
 
         while let Some(token) = self.tokens.front() {
             match token {
@@ -279,29 +227,22 @@ impl Parser {
                         ));
                     }
 
-                    let right = Parser::parse_aditive_expr(self);
+                    let right = Parser::parse_aditive_expr(self)?;
 
-                    if right.is_ok() {
-                        left = Ok(Ast::BitwiseShift {
-                            shift_direction: dir,
-                            left: Box::new(left.unwrap()),
-                            right: Box::new(right.unwrap()),
-                        });
-                    } else {
-                        return right;
-                    }
+                    left = Ast::BitwiseShift {
+                        shift_direction: dir,
+                        left: Box::new(left),
+                        right: Box::new(right),
+                    };
                 }
                 _ => break,
             }
         }
-        left
+        Ok(left)
     }
 
     fn parse_aditive_expr(&mut self) -> Result<Ast, (Errors, String)> {
-        let mut left = Parser::parse_multiplicative_expr(self);
-        if left.is_err() {
-            return left;
-        }
+        let mut left = Parser::parse_multiplicative_expr(self)?;
 
         while let Some(token) = self.tokens.front() {
             match token {
@@ -318,29 +259,22 @@ impl Parser {
                         ));
                     }
 
-                    let right = Parser::parse_multiplicative_expr(self);
+                    let right = Parser::parse_multiplicative_expr(self)?;
 
-                    if right.is_ok() {
-                        left = Ok(Ast::BinaryOperator {
-                            operator: op,
-                            left: Box::new(left.unwrap()),
-                            right: Box::new(right.unwrap()),
-                        });
-                    } else {
-                        return right;
-                    }
+                    left = Ast::BinaryOperator {
+                        operator: op,
+                        left: Box::new(left),
+                        right: Box::new(right),
+                    };
                 }
                 _ => break,
             }
         }
-        left
+        Ok(left)
     }
 
     fn parse_multiplicative_expr(&mut self) -> Result<Ast, (Errors, String)> {
-        let mut left = Parser::parse_call_member_expr(self);
-        if left.is_err() {
-            return left;
-        }
+        let mut left = Parser::parse_call_member_expr(self)?;
 
         while let Some(token) = self.tokens.front() {
             match token {
@@ -359,29 +293,22 @@ impl Parser {
                         ));
                     }
 
-                    let right = Parser::parse_call_member_expr(self);
+                    let right = Parser::parse_call_member_expr(self)?;
 
-                    if right.is_ok() {
-                        left = Ok(Ast::BinaryOperator {
-                            operator: op,
-                            left: Box::new(left.unwrap()),
-                            right: Box::new(right.unwrap()),
-                        });
-                    } else {
-                        return right;
-                    }
+                    left = Ast::BinaryOperator {
+                        operator: op,
+                        left: Box::new(left),
+                        right: Box::new(right),
+                    };
                 }
                 _ => break,
             }
         }
-        left
+        Ok(left)
     }
 
     fn parse_call_member_expr(&mut self) -> Result<Ast, (Errors, String)> {
-        let mut left = Parser::parse_primitive_expr(self);
-        if left.is_err() {
-            return left;
-        }
+        let mut left = Parser::parse_primitive_expr(self)?;
         while self.tokens[0] == TokenType::Dot
             || self.tokens[0] == TokenType::OpenParen
             || self.tokens[0] == TokenType::OpenBracket
@@ -390,23 +317,19 @@ impl Parser {
                 TokenType::Dot => {
                     self.tokens.pop_front(); // pop off the dot
 
-                    let r_result = Parser::parse_primitive_expr(self);
-                    if r_result.is_err() {
-                        return r_result;
-                    }
+                    let right = Parser::parse_primitive_expr(self)?;
 
-                    let right = r_result.unwrap();
-                    if !matches!(right, Ast::Identifier(..)) {
+                    if !matches!(right, Ast::Identifier(_)) {
                         return Err((
                             Errors::SyntaxError,
                             "Expected a identifier after the dot expression".to_owned(),
                         ));
                     }
 
-                    left = Ok(Ast::MemberExpression {
-                        left: Box::new(left.unwrap()),
+                    left = Ast::MemberExpression {
+                        left: Box::new(left),
                         right: Box::new(right),
-                    })
+                    }
                 }
                 TokenType::OpenBracket => {
                     self.tokens.pop_front(); // pop off the opening bracket
@@ -418,10 +341,7 @@ impl Parser {
                         ));
                     }
 
-                    let right = Parser::parse_expression(self);
-                    if right.is_err() {
-                        return right;
-                    }
+                    let right = Parser::parse_expression(self)?;
 
                     if self.tokens[0] != TokenType::ClosedBracket {
                         return Err((
@@ -431,10 +351,10 @@ impl Parser {
                     }
                     self.tokens.pop_front();
 
-                    left = Ok(Ast::MemberExpression {
-                        left: Box::new(left.unwrap()),
-                        right: Box::new(right.unwrap()),
-                    })
+                    left = Ast::MemberExpression {
+                        left: Box::new(left),
+                        right: Box::new(right),
+                    }
                 }
                 TokenType::OpenParen => {
                     self.tokens.pop_front(); // pop off the opening paren
@@ -442,27 +362,20 @@ impl Parser {
                     if self.tokens[0] == TokenType::ClosedParen {
                         // handle no arguments
                         self.tokens.pop_front(); // pop off the closing paren
-                        left = Ok(Ast::CallExpression {
-                            left: Box::new(left.unwrap()),
+                        left = Ast::CallExpression {
+                            left: Box::new(left),
                             arguments: Vec::new(),
-                        });
+                        };
                         continue;
                     }
 
-                    let first_arg = Parser::parse_expression(self);
-                    if first_arg.is_err() {
-                        return first_arg;
-                    }
-                    let mut arg_vec = vec![first_arg.unwrap()];
+                    let first_arg = Parser::parse_expression(self)?;
+                    let mut arg_vec = vec![first_arg];
                     while self.tokens[0] == TokenType::Comma {
                         self.tokens.pop_front();
 
-                        let result = Parser::parse_expression(self);
-                        if result.is_err() {
-                            return result;
-                        }
+                        let arg = Parser::parse_expression(self)?;
 
-                        let arg = result.unwrap();
                         arg_vec.push(arg);
                     }
 
@@ -474,10 +387,10 @@ impl Parser {
                     }
                     self.tokens.pop_front(); // pop off the closing paren
 
-                    left = Ok(Ast::CallExpression {
-                        left: Box::new(left.unwrap()),
+                    left = Ast::CallExpression {
+                        left: Box::new(left),
                         arguments: arg_vec,
-                    })
+                    }
                 }
                 _ => {
                     return Err((
@@ -487,18 +400,18 @@ impl Parser {
                 }
             }
         }
-        left
+        Ok(left)
     }
 
     fn parse_call_arg(
         &mut self,
         parameters: &mut Vec<(Ast, Option<Ast>)>,
     ) -> Option<(Errors, String)> {
-        let result = Parser::parse_primitive_expr(self);
-        if result.is_err() {
-            return result.err();
+        let param: Ast;
+        match Parser::parse_primitive_expr(self) {
+            Ok(x) => param = x,
+            Err(err) => return Some(err),
         }
-        let param = result.unwrap();
         match param {
             Ast::Identifier(_) => {
                 if self.tokens[0] != TokenType::Equals {
@@ -506,11 +419,10 @@ impl Parser {
                     return None;
                 }
                 self.tokens.pop_front(); // remove the equals
-                let result = Parser::parse_expression(self);
-                if result.is_err() {
-                    return result.err();
-                };
-                parameters.push((param, Some(result.unwrap())));
+                match Parser::parse_expression(self) {
+                    Ok(x) => parameters.push((param, Some(x))),
+                    Err(err) => return Some(err),
+                }
             }
             _ => {
                 return Some((
@@ -543,10 +455,7 @@ impl Parser {
                     result
                 }
                 TokenType::If => {
-                    let check = Parser::parse_expression(self);
-                    if check.is_err() {
-                        return check;
-                    }
+                    let check = Parser::parse_expression(self)?;
 
                     if self.tokens[0] != TokenType::OpenBrace {
                         return Err((
@@ -560,11 +469,8 @@ impl Parser {
                     while self.tokens[0] != TokenType::ClosedBrace
                         && self.tokens[0] != TokenType::EOF
                     {
-                        let result = Parser::parse_expression(self);
-                        if result.is_err() {
-                            return result;
-                        }
-                        body_vec.push(result.unwrap());
+                        let expr = Parser::parse_expression(self)?;
+                        body_vec.push(expr);
                     }
 
                     if self.tokens[0] != TokenType::ClosedBrace {
@@ -576,15 +482,12 @@ impl Parser {
                     self.tokens.pop_front();
 
                     return Ok(Ast::IfExpression {
-                        check: Box::new(check.unwrap()),
+                        check: Box::new(check),
                         body: body_vec,
                     });
                 }
                 TokenType::While => {
-                    let check = Parser::parse_expression(self);
-                    if check.is_err() {
-                        return check;
-                    }
+                    let check = Parser::parse_expression(self)?;
 
                     if self.tokens[0] != TokenType::OpenBrace {
                         return Err((
@@ -598,11 +501,8 @@ impl Parser {
                     while self.tokens[0] != TokenType::ClosedBrace
                         && self.tokens[0] != TokenType::EOF
                     {
-                        let result = Parser::parse_expression(self);
-                        if result.is_err() {
-                            return result;
-                        }
-                        body_vec.push(result.unwrap());
+                        let expr = Parser::parse_expression(self)?;
+                        body_vec.push(expr);
                     }
 
                     if self.tokens[0] != TokenType::ClosedBrace {
@@ -614,7 +514,7 @@ impl Parser {
                     self.tokens.pop_front();
 
                     return Ok(Ast::WhileExpression {
-                        check: Box::new(check.unwrap()),
+                        check: Box::new(check),
                         body: body_vec,
                     });
                 }
@@ -636,11 +536,9 @@ impl Parser {
                                 "Expected a closing paren to the callable expression".to_owned(),
                             ));
                         }
-                        if self.tokens[0] != TokenType::ClosedParen {
-                            match Parser::parse_call_arg(self, &mut parameters) {
-                                Some(err) => return Err(err),
-                                None => {}
-                            }
+                        match Parser::parse_call_arg(self, &mut parameters) {
+                            Some(err) => return Err(err),
+                            None => {}
                         }
                         while self.tokens[0] != TokenType::ClosedParen
                             && self.tokens[0] == TokenType::Comma
@@ -650,12 +548,6 @@ impl Parser {
                                 Some(err) => return Err(err),
                                 None => {}
                             }
-                        }
-                        if self.tokens[0] == TokenType::EOF {
-                            return Err((
-                                Errors::SyntaxError,
-                                "Expected a closing paren to the callable expression".to_owned(),
-                            ));
                         }
                     }
                     if self.tokens[0] != TokenType::ClosedParen {
@@ -679,11 +571,8 @@ impl Parser {
                     while self.tokens[0] != TokenType::ClosedBrace
                         && self.tokens[0] != TokenType::EOF
                     {
-                        let result = Parser::parse_expression(self);
-                        if result.is_err() {
-                            return result;
-                        }
-                        body.push(result.unwrap());
+                        let expr = Parser::parse_expression(self)?;
+                        body.push(expr);
                     }
 
                     if self.tokens[0] != TokenType::ClosedBrace {
